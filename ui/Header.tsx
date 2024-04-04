@@ -1,9 +1,9 @@
-import { getSession } from "@/server/authentication/session";
+import { getBrowserCookie } from "@/server/authentication/session";
 import Image from "next/image";
 import Link from "next/link";
 
 export function Header() {
-  const session = getSession();
+  const session = getBrowserCookie();
   const userurl = session?.username || "/";
   return (
     <header className="flex justify-between m-8 items-center">

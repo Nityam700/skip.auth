@@ -1,27 +1,25 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getSession } from "@/server/authentication/session";
+import { getBrowserCookie } from "@/server/authentication/session";
+import { getSessionInDb } from "./server/database/data/userDetails";
 
-export function middleware(request: NextRequest) {
+
+
+export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
 
     const identityRoutes = pathname === "/identity/create" || pathname === "/identity/signin";
-    const appRoute = pathname === "/app";
-    const user = getSession();
+    const appRoute = pathname === "/app" || pathname === "/identity";
+    const user = getBrowserCookie();
     const session = user.sessionExists
 
+
     if (identityRoutes && session) {
+        console.log("MIDDLEWAR PRVENTED THE ACCESS TO THIS PAGE");
         return NextResponse.redirect(new URL('/', request.nextUrl));
     }
     if (appRoute && !session) {
-        return NextResponse.redirect(new URL('/identity/signin', request.url))
+        console.log("MIDDLEWAR PRVENTED THE ACCESS TO THIS PAGE");
+        return NextResponse.redirect(new URL('/identity/signin', request.url));
     }
-}
-
-export const config = {
-    matcher: [
-        '/identity/create',
-        '/app',
-        '/identity/signin',
-    ]
 }

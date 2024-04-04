@@ -13,7 +13,7 @@ interface DecodedToken extends JwtPayload {
 
 }
 
-export function getSession() {
+export function getBrowserCookie() {
     const cookie = cookies();
     const token = cookie.get("User");
     const session = jwt.decode(token?.value!) as DecodedToken;

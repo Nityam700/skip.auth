@@ -1,4 +1,4 @@
-import { getSession, ip } from "@/server/authentication/session";
+import { getBrowserCookie } from "@/server/authentication/session";
 import Logout from "@/server/authentication/ui/Logout";
 import { Button } from "@/ui/Button";
 import { Header } from "@/ui/Header";
@@ -6,10 +6,9 @@ import Themebtn from "@/ui/theme-btn";
 import Link from "next/link";
 
 export default async function Home() {
-  const user = getSession();
+  const user = getBrowserCookie();
   const session = user.sessionExists;
 
-  await ip();
   return (
     <main>
       <Header />

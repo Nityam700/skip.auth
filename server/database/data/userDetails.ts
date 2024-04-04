@@ -1,6 +1,6 @@
 "use server"
 
-import { getSession } from "@/server/authentication/session"
+import { getBrowserCookie } from "@/server/authentication/session"
 import { connectDatabase } from "@/server/database/connect"
 import Session from "@/server/database/schema/session"
 import User from "@/server/database/schema/user"
@@ -9,9 +9,24 @@ export async function getProfile(username: string) {
     try {
         await connectDatabase()
         const profile = await User.findOne({ username: username })
+        console.log(profile);
+
         return profile
     } catch (error) {
-        console.log(error);
+        console.log("PROFILE NOT FOUND");
+    }
+}
+
+export async function getSessionInDb() {
+    try {
+        const session = getBrowserCookie()
+        const id = session.sessionId
+        console.log("SESSION ID = " + id);
+        const sessionInDb = await Session.findById(id)
+        // console.log("SESSION IN DB = " + sessionInDb);
+        return sessionInDb
+    } catch (error) {
+        console.log('NOTHING FOUND');
     }
 }
 
@@ -27,7 +42,7 @@ export async function isUserExists(username: string) {
 
 export async function getSessions() {
     try {
-        const user = getSession()
+        const user = getBrowserCookie()
         await connectDatabase()
         const userSessions = await Session.find({ username: user?.username })
         return userSessions
@@ -37,7 +52,7 @@ export async function getSessions() {
 }
 
 export async function sessionCount() {
-    const user = getSession()
+    const user = getBrowserCookie()
 
     if (user) {
         try {
