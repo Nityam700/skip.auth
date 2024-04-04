@@ -112,7 +112,7 @@ export async function identity(formData: FormData) {
                 const oneDay = 24 * 60 * 60;
                 cookies().set('User', token, {
                     httpOnly: true,
-                    domain: ".vercel.app",
+                    // domain: ".vercel.app",
                     secure: true,
                     priority: 'high',
                     path: '/',
