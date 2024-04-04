@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Spinner } from "./spinner";
 
 interface Button {
   text: String;

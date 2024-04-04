@@ -1,7 +1,6 @@
 import { connectDatabase } from "@/server/database/connect";
 import {
   getProfile,
-  getSessions,
   isUserExists,
   sessionCount,
 } from "@/server/database/data/userDetails";
