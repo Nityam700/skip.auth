@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { cookies } from "next/headers";
 import { Toaster } from "react-hot-toast";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -23,6 +25,8 @@ export default async function RootLayout({
     <html lang="en" className={themeValue}>
       <body className={inter.className}>
         <Toaster position="top-center" reverseOrder={false} />
+        <Analytics />
+        <SpeedInsights />
         {children}
       </body>
     </html>

@@ -3,12 +3,12 @@
 import { connectDatabase } from "@/server/database/connect"
 import Note from "../schema/notes";
 import { v4 as uuidv4 } from "uuid";
-import { getSession } from "@/server/authentication/session";
+import { getBrowserCookie } from "@/server/authentication/session";
 
 export async function addNote(formData: FormData) {
     try {
         const noteId = uuidv4()
-        const session = getSession();
+        const session = getBrowserCookie();
         const username = session?.username
         await connectDatabase();
         const _id = noteId
