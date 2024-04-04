@@ -5,6 +5,10 @@ const sessionSchema = new mongoose.Schema(
         _id: {
             type: String
         },
+        token: {
+            type: String,
+            unique: true
+        },
         username: {
             type: String
         },
@@ -14,6 +18,10 @@ const sessionSchema = new mongoose.Schema(
         date: {
             type: Date,
             default: Date.now
+        },
+        isRevoked: {
+            type: Boolean,
+            default: false
         }
     }, {
     versionKey: false

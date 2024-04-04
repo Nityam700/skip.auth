@@ -4,7 +4,15 @@ import { toast } from "react-hot-toast";
 import { identity } from "@/server/authentication/identity";
 import { SubmitButton } from "@/ui/SubmitButton";
 
-export default function Logout() {
+export interface Logout {
+  revokingSessionId: any;
+  revokingSessionToken: any;
+}
+
+export default function Revoke({
+  revokingSessionId,
+  revokingSessionToken,
+}: Logout) {
   const router = useRouter();
 
   async function identityLogout(formData: FormData) {
@@ -39,11 +47,25 @@ export default function Logout() {
       });
     }
   }
+
   return (
     <form action={identityLogout}>
       <input type="text" defaultValue={"LOGOUT"} name="type" hidden />
-      <input defaultValue={"CURRENT_SESSION"} hidden name="logoutType" />
-      <SubmitButton text={"Logout"} />
+      <input type="text" defaultValue={"REVOKE"} name="logoutType" hidden />
+      <input
+        type="text"
+        defaultValue={revokingSessionId}
+        hidden
+        name="revokingSessionId"
+      />
+      <input
+        type="text"
+        defaultValue={revokingSessionToken}
+        name="revokingSessionToken"
+        hidden
+      />
+
+      <SubmitButton text={"Revoke"} />
     </form>
   );
 }

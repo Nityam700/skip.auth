@@ -5,6 +5,12 @@ import { cookies } from "next/headers";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import {
+  getBlackListedToken,
+  getSessionInDb,
+} from "@/server/authentication/identity";
+import { redirect } from "next/navigation";
+import Logout from "@/server/authentication/ui/Logout";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -21,14 +27,47 @@ export default async function RootLayout({
   const theme: any = cookieStore.get("theme");
   const themeValue = theme?.value || "dark";
 
-  return (
-    <html lang="en" className={themeValue}>
-      <body className={inter.className}>
-        <Toaster position="top-center" reverseOrder={false} />
-        <Analytics />
-        <SpeedInsights />
-        {children}
-      </body>
-    </html>
-  );
+  // await getSessionInDb();
+  const token = cookies().get("User");
+  console.log("THE TOKEN IS = " + token?.value);
+
+  if (token) {
+    console.log("MIDDLEWARE ACTIVE HERE");
+    const dbToken = await getBlackListedToken(token.value);
+    const blackListedToken = dbToken?.token;
+    const tokenExistsinBlackList = blackListedToken === token.value;
+    if (tokenExistsinBlackList) {
+      console.log("MIDDLEWARE ACTIVATED AND DELETED THE SESSION");
+      return (
+        <html lang="en" className={themeValue}>
+          <body className={inter.className}>
+            <p>Invalid Session!</p>
+            <Logout />
+          </body>
+        </html>
+      );
+    } else {
+      return (
+        <html lang="en" className={themeValue}>
+          <body className={inter.className}>
+            <Toaster position="top-center" reverseOrder={false} />
+            <Analytics />
+            <SpeedInsights />
+            {children}
+          </body>
+        </html>
+      );
+    }
+  } else {
+    return (
+      <html lang="en" className={themeValue}>
+        <body className={inter.className}>
+          <Toaster position="top-center" reverseOrder={false} />
+          <Analytics />
+          <SpeedInsights />
+          {children}
+        </body>
+      </html>
+    );
+  }
 }

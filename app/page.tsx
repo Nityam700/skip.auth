@@ -26,14 +26,20 @@ export default async function Home() {
               <Button text={"Get Started"}></Button>
             </Link>
           )}
+
+          {!session && (
+            <Link href={"/identity/signin"}>
+              <Button text={"Sign In"}></Button>
+            </Link>
+          )}
           {session && (
             <Link href={"/app"}>
               <Button text={"App"}></Button>
             </Link>
           )}
-          {!session && (
-            <Link href={"/identity/signin"}>
-              <Button text={"Sign In"}></Button>
+          {session && (
+            <Link href={"/identity"}>
+              <Button text={"Identity"}></Button>
             </Link>
           )}
           <Themebtn />

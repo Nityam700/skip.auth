@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getBrowserCookie } from "@/server/authentication/session";
-import { getSessionInDb } from "./server/database/data/userDetails";
 
 
 
@@ -14,6 +13,7 @@ export async function middleware(request: NextRequest) {
     const session = user.sessionExists
 
 
+
     if (identityRoutes && session) {
         console.log("MIDDLEWAR PRVENTED THE ACCESS TO THIS PAGE");
         return NextResponse.redirect(new URL('/', request.nextUrl));
@@ -22,4 +22,6 @@ export async function middleware(request: NextRequest) {
         console.log("MIDDLEWAR PRVENTED THE ACCESS TO THIS PAGE");
         return NextResponse.redirect(new URL('/identity/signin', request.url));
     }
+
 }
+
