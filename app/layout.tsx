@@ -9,6 +9,7 @@ import { getBlackListedToken } from "@/server/authentication/identity";
 import Logout from "@/server/authentication/ui/Logout";
 import { getBrowserCookie } from "@/server/cookie/session";
 import { SignInBox } from "@/ui/SignInBox";
+import SigninForm from "@/server/authentication/ui/SigninForm";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -25,7 +26,6 @@ export default async function RootLayout({
   const theme: any = cookieStore.get("theme");
   const themeValue = theme?.value || "dark";
 
-  // await getSessionInDb();
   const token = cookies().get("User");
   const session = getBrowserCookie();
 
@@ -70,10 +70,7 @@ export default async function RootLayout({
       <html lang="en" className={themeValue}>
         <body className={inter.className}>
           <Toaster position="top-center" reverseOrder={false} />
-          <Analytics />
-          <SpeedInsights />
-          <SignInBox />
-          {children}
+          <SigninForm />
         </body>
       </html>
     );

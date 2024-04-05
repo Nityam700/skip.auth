@@ -23,7 +23,7 @@ const blacklistedTokenSchema = new mongoose.Schema({
         default: Date.now
 
     },
-});
+}, { versionKey: false });
 
 const BlacklistedToken = mongoose.models?.BlacklistedToken || mongoose.model("BlacklistedToken", blacklistedTokenSchema);
 

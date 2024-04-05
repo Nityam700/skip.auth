@@ -12,7 +12,7 @@ export default async function Identity() {
   const userBlacklistedToken = await getUserAllBlackListedToken();
   // console.log(sessions);
   const isTokenExists = userBlacklistedToken === null;
-  console.log("TOKEN EXISTS OR NOT ? = " + isTokenExists);
+  // console.log("TOKEN EXISTS OR NOT ? = " + isTokenExists);
 
   return (
     <div className="lg:ml-24 lg:mr-24 mt-5 md:ml-12 md:mr-12 m-1">

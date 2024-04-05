@@ -11,6 +11,8 @@ export async function addNote(formData: FormData) {
         const session = getBrowserCookie();
         const username = session?.username
         await connectDatabase();
+        console.log("CONNECTION REQUESTED FROM addNote PAGE");
+
         const _id = noteId
         const heading = formData.get('heading')
         const subheading = formData.get('subheading')

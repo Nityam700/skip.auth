@@ -10,6 +10,9 @@ import { getBrowserCookie, ip } from "@/server/cookie/session";
 import BlacklistedToken from "../database/schema/blackListedToken";
 import { revalidatePath } from "next/cache";
 
+
+
+
 export async function getBlackListedToken(token: string) {
     try {
         await connectDatabase();
@@ -199,19 +202,36 @@ export async function identity(formData: FormData) {
         }
         if (logoutType === "DELETE") {
             console.log("LOGOUT TYPE = DELETE INITIATED");
-            const id = formData.get('revokedSessionId')
-            console.log("REVOKED SESSION ID = " + id);
+
 
             try {
-                await BlacklistedToken.findByIdAndDelete(id)
-                return {
-                    deleteSuccess: "Successfully Deleted"
+
+                const token = cookies().get('User')
+                if (token) {
+                    const dbToken = await getBlackListedToken(token.value);
+                    const blackListedToken = dbToken?.token;
+                    const tokenExistsinBlackList = blackListedToken === token.value;
+                    if (tokenExistsinBlackList) {
+                        console.log("USER NOT PERMITTER FOR REVOKE ACTION");
+                        return {
+                            tokenBlackListed: "You are not permitted do this. Your session is expired or revoked"
+                        }
+                    } else {
+                        const id = formData.get('revokedSessionId')
+                        console.log("REVOKED SESSION ID = " + id);
+                        await BlacklistedToken.findByIdAndDelete(id)
+                        return {
+                            deleteSuccess: "Successfully Deleted"
+                        }
+                    }
                 }
+
             } catch (error) {
                 return {
                     deleteError: "Failed to delete"
                 }
             }
+
         }
         if (logoutType === "VERIFY") {
             try {
@@ -234,23 +254,36 @@ export async function identity(formData: FormData) {
                 const userId = formData.get('userId')
                 const blackListedTokenId = uuidv4();
 
-                const revokeThisSession = await Session.findByIdAndDelete({ _id: revokingSessionId })
-                console.log("THIS SESSION IS DELETED FRON THE DATABASE = " + revokeThisSession);
-                const blaklistToken = await BlacklistedToken.create({
-                    _id: blackListedTokenId,
-                    username: username,
-                    userId: userId,
-                    token: revokingSessionToken
-                });
-                console.log("BLCKLISTED TOKEN DATA= " + blaklistToken);
-                revalidatePath('/identity')
+                const token = cookies().get('User')
+                if (token) {
+                    const dbToken = await getBlackListedToken(token.value);
+                    const blackListedToken = dbToken?.token;
+                    const tokenExistsinBlackList = blackListedToken === token.value;
+                    if (tokenExistsinBlackList) {
+                        console.log("USER NOT PERMITTER FOR REVOKE ACTION");
+                        return {
+                            tokenBlackListed: "You are not permitted do this. Your session is expired or revoked"
+                        }
+                    } else {
+                        const revokeThisSession = await Session.findByIdAndDelete({ _id: revokingSessionId })
+                        console.log("THIS SESSION IS DELETED FRON THE DATABASE = " + revokeThisSession);
+                        const blaklistToken = await BlacklistedToken.create({
+                            _id: blackListedTokenId,
+                            username: username,
+                            userId: userId,
+                            token: revokingSessionToken
+                        });
+                        console.log("BLCKLISTED TOKEN DATA= " + blaklistToken);
+                        revalidatePath('/identity')
 
-                return {
-                    logoutSuccess: "Session Revoked"
+                        return {
+                            logoutSuccess: "Session Revoked"
+                        }
+
+                    }
                 }
             } catch (error) {
                 console.log(error, "REVOKE FAILED");
-
                 return {
                     logoutError: "Failed to Revoke session"
                 }

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getBrowserCookie } from "@/server/cookie/session";
-import { cookies } from "next/headers";
 
 
 
@@ -23,6 +22,5 @@ export async function middleware(request: NextRequest) {
         console.log("MIDDLEWAR PRVENTED THE ACCESS TO THIS PAGE");
         return NextResponse.redirect(new URL('/identity/signin', request.url));
     }
-
 }
 

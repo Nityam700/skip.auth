@@ -8,9 +8,9 @@ export async function getProfile() {
 
     try {
         await connectDatabase()
-        const profile = await User.findOne({ username: user?.username! })
-        console.log(profile);
+        console.log("LOG FROM database/data");
 
+        const profile = await User.findOne({ username: user?.username! })
         return profile
     } catch (error) {
         console.log("PROFILE NOT FOUND");
@@ -19,13 +19,4 @@ export async function getProfile() {
 
 
 
-// export async function isUserExists(username: string) {
-//     try {
-//         await connectDatabase()
-//         const response = await User.findOne({ username: username })
-//         return response
-//     } catch (error) {
-//         console.log(error);
-//     }
-// }
 

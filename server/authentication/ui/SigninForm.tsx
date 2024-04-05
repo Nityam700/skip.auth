@@ -22,7 +22,7 @@ export default function SigninForm() {
           secondary: "#FFFAEE",
         },
       });
-      router.back();
+      router.push("/");
     }
     if (createIdentity?.incorrectPassword) {
       toast.error(createIdentity.incorrectPassword, {
