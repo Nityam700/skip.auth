@@ -15,7 +15,6 @@ import { getBrowserCookie } from "@/server/cookie/session";
 import SigninForm from "@/server/authentication/ui/SigninForm";
 import Link from "next/link";
 import { SignInBox } from "@/ui/SignInBox";
-import { openBox } from "@/server/cookie/signInBox";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
