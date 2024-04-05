@@ -5,15 +5,9 @@ import { cookies } from "next/headers";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import {
-  getBlackListedToken,
-  getSessionInDb,
-} from "@/server/authentication/identity";
-import { redirect } from "next/navigation";
+import { getBlackListedToken } from "@/server/authentication/identity";
 import Logout from "@/server/authentication/ui/Logout";
 import { getBrowserCookie } from "@/server/cookie/session";
-import SigninForm from "@/server/authentication/ui/SigninForm";
-import Link from "next/link";
 import { SignInBox } from "@/ui/SignInBox";
 const inter = Inter({ subsets: ["latin"] });
 
