@@ -9,6 +9,9 @@ const sessionSchema = new mongoose.Schema(
             type: String,
             unique: true
         },
+        userId: {
+            type: String
+        },
         username: {
             type: String
         },
@@ -19,10 +22,6 @@ const sessionSchema = new mongoose.Schema(
             type: Date,
             default: Date.now
         },
-        isRevoked: {
-            type: Boolean,
-            default: false
-        }
     }, {
     versionKey: false
 }

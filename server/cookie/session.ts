@@ -1,8 +1,6 @@
 import { cookies } from "next/headers";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import axios from "axios";
-import { connectDatabase } from "@/server/database/connect";
-import BlacklistedToken from "../database/schema/blackListedToken";
 
 interface DecodedToken extends JwtPayload {
     _id: string,

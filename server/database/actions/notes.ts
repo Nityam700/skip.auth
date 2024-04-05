@@ -3,7 +3,7 @@
 import { connectDatabase } from "@/server/database/connect"
 import Note from "../schema/notes";
 import { v4 as uuidv4 } from "uuid";
-import { getBrowserCookie } from "@/server/authentication/session";
+import { getBrowserCookie } from "@/server/cookie/session";
 
 export async function addNote(formData: FormData) {
     try {

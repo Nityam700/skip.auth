@@ -19,7 +19,7 @@ export function Input({
 }: InputProps) {
   return (
     <input
-      className={`surface p-3 rounded-xl w-80 md:w-96 text-[#121212] placeholder:text-[#121212] ${className}`}
+      className={`input p-3 rounded-xl w-80 md:w-96 text-[#512602] placeholder:text-[#512602] ${className}`}
       placeholder={placeholder}
       type={type}
       name={name}

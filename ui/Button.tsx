@@ -15,7 +15,7 @@ export function Button({ text, type, className }: Button) {
   }
   return (
     <button
-      className={`surface bg-white text-[#48280e] p-3 rounded-xl font-semibold ${className}`}
+      className={`surfaceLight bg-white text-[#48280e] p-3 rounded-xl font-semibold ${className}`}
       type={type}
       onClick={pending}
     >

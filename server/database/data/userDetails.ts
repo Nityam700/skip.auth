@@ -1,5 +1,5 @@
 "use server"
-import { getBrowserCookie } from "@/server/authentication/session";
+import { getBrowserCookie } from "@/server/cookie/session";
 import { connectDatabase } from "@/server/database/connect"
 import User from "@/server/database/schema/user"
 

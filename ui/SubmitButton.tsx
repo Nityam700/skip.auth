@@ -7,7 +7,7 @@ export function SubmitButton({ text }: { text: String }) {
 
   return (
     <button
-      className="surface bg-white font-semibold text-[#48280e] p-3 rounded-xl w-full"
+      className="surfaceLight bg-white font-semibold text-[#48280e] p-3 rounded-xl w-full"
       type="submit"
       disabled={pending}
     >

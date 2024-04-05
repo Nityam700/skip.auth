@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getBrowserCookie } from "@/server/authentication/session";
+import { getBrowserCookie } from "@/server/cookie/session";
+import { cookies } from "next/headers";
 
 
 
@@ -12,7 +13,7 @@ export async function middleware(request: NextRequest) {
     const user = getBrowserCookie();
     const session = user.sessionExists
 
-
+    request.cookies.set('SignInBox', 'open')
 
     if (identityRoutes && session) {
         console.log("MIDDLEWAR PRVENTED THE ACCESS TO THIS PAGE");

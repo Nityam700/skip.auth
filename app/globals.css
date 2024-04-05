@@ -2,12 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  transition: 50ms ease-in-out;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .light body {
   background-color: rgb(246, 244, 241);
   color: #512602;
 }
-
 .light .surface {
+  background-color: ghostwhite;
+  border: 1px solid #121212;
+}
+.light .surfaceLight {
   background-color: ghostwhite;
   border: 1px solid #121212;
 }
@@ -15,7 +28,13 @@
   background-color: #121212;
   color: rgba(245, 232, 210, 0.914);
 }
-
+.dark .surface {
+  background-color: #171717;
+}
+.dark .input {
+  background-color: ghostwhite;
+  color: #512602;
+}
 input {
   border: none;
   outline: none;

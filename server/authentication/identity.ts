@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs"
 import Session from "@/server/database/schema/session";
-import { getBrowserCookie, ip } from "@/server/authentication/session";
+import { getBrowserCookie, ip } from "@/server/cookie/session";
 import BlacklistedToken from "../database/schema/blackListedToken";
 import { revalidatePath } from "next/cache";
 
@@ -14,9 +14,22 @@ export async function getBlackListedToken(token: string) {
     try {
         await connectDatabase();
         const blackListedToken = await BlacklistedToken.findOne({ token: token })
-        console.log("BLACKLISTED TOKEN = " + blackListedToken);
-
+        // console.log("BLACKLISTED TOKEN = " + blackListedToken);
         return blackListedToken
+    } catch (error) {
+        console.log(error, "FAILED TO GET BLACKLISTED TOKEN");
+    }
+}
+
+export async function getUserAllBlackListedToken() {
+    try {
+        const session = getBrowserCookie()
+        const username = session.username
+        await connectDatabase()
+        const userBlaclistedToken = await BlacklistedToken.find({ username: username });
+        // console.log("userBlaclistedToken = " + userBlaclistedToken);
+
+        return userBlaclistedToken
     } catch (error) {
         console.log(error, "FAILED TO GET BLACKLISTED TOKEN");
     }
@@ -73,9 +86,6 @@ export async function identity(formData: FormData) {
         console.log("ACCOUNT CREATION ATTEMPT REQUESTED");
 
         try {
-            const userId = uuidv4()
-            console.log("A UNIQUE USER ID IS CREATED " + userId);
-            const id = userId;
             const username = formData.get('username');
             const password = formData.get('password') as string;
 
@@ -90,6 +100,9 @@ export async function identity(formData: FormData) {
                     userexists: `username ${username} is taken`
                 }
             } else {
+                const userId = uuidv4()
+                console.log("A UNIQUE USER ID IS CREATED " + userId);
+                const id = userId;
                 const salt = await bcrypt.genSalt(10);
                 const securePassword = await bcrypt.hash
                     (password, salt);
@@ -184,6 +197,22 @@ export async function identity(formData: FormData) {
                 }
             }
         }
+        if (logoutType === "DELETE") {
+            console.log("LOGOUT TYPE = DELETE INITIATED");
+            const id = formData.get('revokedSessionId')
+            console.log("REVOKED SESSION ID = " + id);
+
+            try {
+                await BlacklistedToken.findByIdAndDelete(id)
+                return {
+                    deleteSuccess: "Successfully Deleted"
+                }
+            } catch (error) {
+                return {
+                    deleteError: "Failed to delete"
+                }
+            }
+        }
         if (logoutType === "VERIFY") {
             try {
                 cookies().delete('User')
@@ -198,13 +227,19 @@ export async function identity(formData: FormData) {
         }
         if (logoutType === "REVOKE") {
             try {
-
+                console.log("LOGOUT TYPE = REVOKE INITIATED");
                 const revokingSessionId = formData.get('revokingSessionId')
                 const revokingSessionToken = formData.get('revokingSessionToken')
+                const username = formData.get('username')
+                const userId = formData.get('userId')
+                const blackListedTokenId = uuidv4();
 
                 const revokeThisSession = await Session.findByIdAndDelete({ _id: revokingSessionId })
-                console.log("THIS SESSION IS DELETED FRON THE DATABASE");
+                console.log("THIS SESSION IS DELETED FRON THE DATABASE = " + revokeThisSession);
                 const blaklistToken = await BlacklistedToken.create({
+                    _id: blackListedTokenId,
+                    username: username,
+                    userId: userId,
                     token: revokingSessionToken
                 });
                 console.log("BLCKLISTED TOKEN DATA= " + blaklistToken);
@@ -269,8 +304,10 @@ async function signUserJWT(user: any) {
         token: token,
         ipAddress: userIp,
         username: user.username,
+        userId: user._id,
     })
     await newSession.save()
+    revalidatePath('/identity')
     console.log("USER SESSION SUCCESSFULLY CREATED IN THE DATABASE WITH THE FOLLOWING DATA = " + newSession);
 
 }

@@ -1,13 +1,24 @@
 import mongoose from "mongoose";
 
 const blacklistedTokenSchema = new mongoose.Schema({
+    _id: {
+        type: String,
+        required: true
+    },
+    username: {
+        type: String,
+        required: true
+    },
+    userId: {
+        type: String,
+    },
     token:
     {
         type: String,
         unique: true,
         required: true
     },
-    createdAt: {
+    blcklistedOn: {
         type: Date,
         default: Date.now
 

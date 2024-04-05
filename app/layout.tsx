@@ -11,6 +11,11 @@ import {
 } from "@/server/authentication/identity";
 import { redirect } from "next/navigation";
 import Logout from "@/server/authentication/ui/Logout";
+import { getBrowserCookie } from "@/server/cookie/session";
+import SigninForm from "@/server/authentication/ui/SigninForm";
+import Link from "next/link";
+import { SignInBox } from "@/ui/SignInBox";
+import { openBox } from "@/server/cookie/signInBox";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -29,20 +34,29 @@ export default async function RootLayout({
 
   // await getSessionInDb();
   const token = cookies().get("User");
-  console.log("THE TOKEN IS = " + token?.value);
+  const session = getBrowserCookie();
 
   if (token) {
-    console.log("MIDDLEWARE ACTIVE HERE");
     const dbToken = await getBlackListedToken(token.value);
     const blackListedToken = dbToken?.token;
     const tokenExistsinBlackList = blackListedToken === token.value;
     if (tokenExistsinBlackList) {
-      console.log("MIDDLEWARE ACTIVATED AND DELETED THE SESSION");
       return (
         <html lang="en" className={themeValue}>
-          <body className={inter.className}>
-            <p>Invalid Session!</p>
-            <Logout />
+          <body
+            className={`${inter.className} flex flex-col justify-center items-center h-dvh`}
+          >
+            <Toaster position="top-center" reverseOrder={false} />
+            <Analytics />
+            <SpeedInsights />
+            <div className="p-4 flex flex-col gap-3">
+              <p className="text-4xl font-semibold">Invalid session!</p>
+              <p>
+                hi {session.username}!<br /> You current session has been
+                revoked. To verify you identity sign In again.
+              </p>
+              <Logout />
+            </div>
           </body>
         </html>
       );
@@ -65,6 +79,7 @@ export default async function RootLayout({
           <Toaster position="top-center" reverseOrder={false} />
           <Analytics />
           <SpeedInsights />
+          <SignInBox />
           {children}
         </body>
       </html>

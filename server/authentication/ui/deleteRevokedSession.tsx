@@ -4,13 +4,17 @@ import { toast } from "react-hot-toast";
 import { identity } from "@/server/authentication/identity";
 import { SubmitButton } from "@/ui/SubmitButton";
 
-export default function Logout() {
+export interface Logout {
+  revokedSessionId: any;
+}
+
+export default function DeleteRevokedSession({ revokedSessionId }: Logout) {
   const router = useRouter();
 
   async function identityLogout(formData: FormData) {
     const logout = await identity(formData);
-    if (logout?.logoutSuccess) {
-      toast.success(logout.logoutSuccess, {
+    if (logout?.deleteSuccess) {
+      toast.success(logout.deleteSuccess, {
         duration: 5000,
         style: {
           border: "1px solid #713200",
@@ -22,10 +26,10 @@ export default function Logout() {
           secondary: "#FFFAEE",
         },
       });
-      router.push("/identity/signin");
+      router.refresh();
     }
-    if (logout?.logoutError) {
-      toast.error(logout.logoutError, {
+    if (logout?.deleteError) {
+      toast.error(logout.deleteError, {
         duration: 5000,
         style: {
           border: "1px solid #713200",
@@ -39,11 +43,18 @@ export default function Logout() {
       });
     }
   }
+
   return (
     <form action={identityLogout}>
       <input type="text" defaultValue={"LOGOUT"} name="type" hidden />
-      <input defaultValue={"CURRENT_SESSION"} hidden name="logoutType" />
-      <SubmitButton text={"Logout"} />
+      <input type="text" defaultValue={"DELETE"} name="logoutType" hidden />
+      <input
+        type="text"
+        defaultValue={revokedSessionId}
+        hidden
+        name="revokedSessionId"
+      />
+      <SubmitButton text={"Delete"} />
     </form>
   );
 }

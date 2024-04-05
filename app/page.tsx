@@ -1,4 +1,4 @@
-import { getBrowserCookie } from "@/server/authentication/session";
+import { getBrowserCookie } from "@/server/cookie/session";
 import Logout from "@/server/authentication/ui/Logout";
 import { Button } from "@/ui/Button";
 import { Header } from "@/ui/Header";

@@ -7,11 +7,15 @@ import { SubmitButton } from "@/ui/SubmitButton";
 export interface Logout {
   revokingSessionId: any;
   revokingSessionToken: any;
+  username: any;
+  userId: any;
 }
 
 export default function Revoke({
   revokingSessionId,
   revokingSessionToken,
+  username,
+  userId,
 }: Logout) {
   const router = useRouter();
 
@@ -30,7 +34,7 @@ export default function Revoke({
           secondary: "#FFFAEE",
         },
       });
-      router.push("/");
+      router.refresh();
     }
     if (logout?.logoutError) {
       toast.error(logout.logoutError, {
@@ -65,6 +69,8 @@ export default function Revoke({
         hidden
       />
 
+      <input type="text" defaultValue={username} hidden name="username" />
+      <input type="text" defaultValue={userId} hidden name="userId" />
       <SubmitButton text={"Revoke"} />
     </form>
   );

@@ -1,4 +1,4 @@
-import { getBrowserCookie } from "@/server/authentication/session";
+import { getBrowserCookie } from "@/server/cookie/session";
 import Image from "next/image";
 import Link from "next/link";
 

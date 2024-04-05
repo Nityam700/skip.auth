@@ -54,7 +54,8 @@ export default function SigninForm() {
     }
   }
   return (
-    <div className="flex justify-center items-center h-dvh">
+    <div className="flex gap-3 flex-col justify-center items-center h-dvh">
+      <p className="text-xl">Hi! sign in to continue</p>
       <form
         action={identitySignin}
         className="flex flex-col gap-3 justify-center items-center"
