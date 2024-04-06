@@ -1,4 +1,4 @@
-import { getBrowserCookie } from "@/server/cookie/session";
+import { useSession } from "@/hooks/useSession";
 import Logout from "@/server/authentication/ui/Logout";
 import { Button } from "@/ui/Button";
 import { Header } from "@/ui/Header";
@@ -6,8 +6,7 @@ import Themebtn from "@/ui/theme-btn";
 import Link from "next/link";
 
 export default async function Home() {
-  const user = getBrowserCookie();
-  const session = user.sessionExists;
+  const user = useSession();
 
   return (
     <main>
@@ -21,29 +20,29 @@ export default async function Home() {
           other Authentication related things
         </p>
         <div className="flex flex-wrap justify-center gap-5">
-          {!session && (
+          {!user && (
             <Link href={"/identity/create"}>
               <Button text={"Get Started"}></Button>
             </Link>
           )}
 
-          {!session && (
+          {!user && (
             <Link href={"/identity/signin"}>
               <Button text={"Sign In"}></Button>
             </Link>
           )}
-          {session && (
+          {user && (
             <Link href={"/app"}>
               <Button text={"App"}></Button>
             </Link>
           )}
-          {session && (
+          {user && (
             <Link href={"/identity"}>
               <Button text={"Identity"}></Button>
             </Link>
           )}
           <Themebtn />
-          {session && <Logout />}
+          {user && <Logout />}
         </div>
       </div>
     </main>

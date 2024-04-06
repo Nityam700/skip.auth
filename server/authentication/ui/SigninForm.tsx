@@ -1,56 +1,23 @@
 "use client";
 import { Input } from "@/ui/Input";
 import { SubmitButton } from "@/ui/SubmitButton";
-import { redirect, useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 import { identity } from "@/server/authentication/identity";
+import { errorToast, successToast } from "@/hooks/useToast";
 
 export default function SigninForm() {
   const router = useRouter();
   async function identitySignin(formData: FormData) {
     const createIdentity = await identity(formData);
     if (createIdentity?.signInSuccess) {
-      toast.success(createIdentity.signInSuccess, {
-        duration: 5000,
-        style: {
-          border: "1px solid #713200",
-          padding: "12px",
-          color: "#713200",
-        },
-        iconTheme: {
-          primary: "#713200",
-          secondary: "#FFFAEE",
-        },
-      });
+      successToast(createIdentity.signInSuccess);
       router.push("/");
     }
     if (createIdentity?.incorrectPassword) {
-      toast.error(createIdentity.incorrectPassword, {
-        duration: 5000,
-        style: {
-          border: "1px solid #713200",
-          padding: "12px",
-          color: "#713200",
-        },
-        iconTheme: {
-          primary: "#713200",
-          secondary: "#FFFAEE",
-        },
-      });
+      errorToast(createIdentity.incorrectPassword);
     }
     if (createIdentity?.userDosentExists) {
-      toast.error(createIdentity.userDosentExists, {
-        duration: 5000,
-        style: {
-          border: "1px solid #713200",
-          padding: "12px",
-          color: "#713200",
-        },
-        iconTheme: {
-          primary: "#713200",
-          secondary: "#FFFAEE",
-        },
-      });
+      errorToast(createIdentity.userDosentExists);
     }
   }
   return (

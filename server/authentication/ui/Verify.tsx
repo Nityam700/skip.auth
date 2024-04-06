@@ -4,24 +4,25 @@ import { identity } from "@/server/authentication/identity";
 import { SubmitButton } from "@/ui/SubmitButton";
 import { errorToast, successToast } from "@/hooks/useToast";
 
-export default function Logout() {
+export default function Verify() {
   const router = useRouter();
 
   async function identityLogout(formData: FormData) {
     const logout = await identity(formData);
-    if (logout?.logoutSuccess) {
-      successToast(logout.logoutSuccess);
-      router.push("/");
+    if (logout?.verificationInitiated) {
+      successToast(logout.verificationInitiated);
+      router.push("/identity/signin");
     }
-    if (logout?.logoutError) {
-      errorToast(logout.logoutError);
+    if (logout?.verificationFailed) {
+      errorToast(logout.verificationFailed);
+      router.refresh();
     }
   }
   return (
     <form action={identityLogout}>
       <input type="text" defaultValue={"LOGOUT"} name="type" hidden />
-      <input defaultValue={"CURRENT_SESSION"} hidden name="logoutType" />
-      <SubmitButton text={"Logout"} />
+      <input defaultValue={"VERIFY"} hidden name="logoutType" />
+      <SubmitButton text={"Verify again"} />
     </form>
   );
 }

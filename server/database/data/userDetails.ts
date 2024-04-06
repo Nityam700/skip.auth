@@ -1,10 +1,11 @@
 "use server"
-import { getBrowserCookie } from "@/server/cookie/session";
+import { useSession } from "@/hooks/useSession";
 import { connectDatabase } from "@/server/database/connect"
 import User from "@/server/database/schema/user"
 
 export async function getProfile() {
-    const user = getBrowserCookie();
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const user = useSession();
 
     try {
         await connectDatabase()

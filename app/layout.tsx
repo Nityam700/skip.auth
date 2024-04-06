@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import { cookies } from "next/headers";
+import "@/app/globals.css";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { getBlackListedToken } from "@/server/authentication/identity";
-import Logout from "@/server/authentication/ui/Logout";
-import { getBrowserCookie } from "@/server/cookie/session";
-import { SignInBox } from "@/ui/SignInBox";
-import SigninForm from "@/server/authentication/ui/SigninForm";
+import { useTheme } from "@/hooks/useTheme";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -22,57 +17,19 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = cookies();
-  const theme: any = cookieStore.get("theme");
-  const themeValue = theme?.value || "dark";
+  // hooks
+  const theme = useTheme();
+  // const session = await getSessionInDb();
+  // console.log(session);
 
-  const token = cookies().get("User");
-  const session = getBrowserCookie();
-
-  if (token) {
-    const dbToken = await getBlackListedToken(token.value);
-    const blackListedToken = dbToken?.token;
-    const tokenExistsinBlackList = blackListedToken === token.value;
-    if (tokenExistsinBlackList) {
-      return (
-        <html lang="en" className={themeValue}>
-          <body
-            className={`${inter.className} flex flex-col justify-center items-center h-dvh`}
-          >
-            <Toaster position="top-center" reverseOrder={false} />
-            <Analytics />
-            <SpeedInsights />
-            <div className="p-4 flex flex-col gap-3">
-              <p className="text-4xl font-semibold">Invalid session!</p>
-              <p>
-                hi {session.username}!<br /> You current session has been
-                revoked. To verify you identity sign In again.
-              </p>
-              <Logout />
-            </div>
-          </body>
-        </html>
-      );
-    } else {
-      return (
-        <html lang="en" className={themeValue}>
-          <body className={inter.className}>
-            <Toaster position="top-center" reverseOrder={false} />
-            <Analytics />
-            <SpeedInsights />
-            {children}
-          </body>
-        </html>
-      );
-    }
-  } else {
-    return (
-      <html lang="en" className={themeValue}>
-        <body className={inter.className}>
-          <Toaster position="top-center" reverseOrder={false} />
-          <SigninForm />
-        </body>
-      </html>
-    );
-  }
+  return (
+    <html lang="en" className={theme}>
+      <body className={inter.className}>
+        <Toaster position="top-center" reverseOrder={false} />
+        <Analytics />
+        <SpeedInsights />
+        {children}
+      </body>
+    </html>
+  );
 }

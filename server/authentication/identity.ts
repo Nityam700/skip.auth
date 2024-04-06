@@ -6,54 +6,18 @@ import { v4 as uuidv4 } from "uuid";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs"
 import Session from "@/server/database/schema/session";
-import { getBrowserCookie, ip } from "@/server/cookie/session";
+import { ip } from "@/hooks/useSession";
 import BlacklistedToken from "../database/schema/blackListedToken";
 import { revalidatePath } from "next/cache";
+import { useSession } from "@/hooks/useSession";
+import { useSessionInDb } from "@/hooks/useSessionIdDb";
 
 
-
-
-export async function getBlackListedToken(token: string) {
-    try {
-        await connectDatabase();
-        const blackListedToken = await BlacklistedToken.findOne({ token: token })
-        // console.log("BLACKLISTED TOKEN = " + blackListedToken);
-        return blackListedToken
-    } catch (error) {
-        console.log(error, "FAILED TO GET BLACKLISTED TOKEN");
-    }
-}
-
-export async function getUserAllBlackListedToken() {
-    try {
-        const session = getBrowserCookie()
-        const username = session.username
-        await connectDatabase()
-        const userBlaclistedToken = await BlacklistedToken.find({ username: username });
-        // console.log("userBlaclistedToken = " + userBlaclistedToken);
-
-        return userBlaclistedToken
-    } catch (error) {
-        console.log(error, "FAILED TO GET BLACKLISTED TOKEN");
-    }
-}
-
-export async function getSessionInDb() {
-    try {
-        const session = getBrowserCookie()
-        const id = session.sessionId
-        console.log("SESSION ID = " + id);
-        const sessionInDb = await Session.findById(id)
-        console.log("SESSION IN DB = " + sessionInDb);
-        return sessionInDb
-    } catch (error) {
-        console.log('NOTHING FOUND');
-    }
-}
 
 export async function getSessions() {
     try {
-        const user = getBrowserCookie()
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const user = useSession()
         await connectDatabase()
         const userSessions = await Session.find({ username: user?.username })
         return userSessions
@@ -63,7 +27,8 @@ export async function getSessions() {
 }
 
 export async function sessionCount() {
-    const user = getBrowserCookie()
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const user = useSession()
 
     if (user) {
         try {
@@ -135,7 +100,6 @@ export async function identity(formData: FormData) {
 
     }
 
-    if (type === "VERIFY") { }
 
 
 
@@ -180,15 +144,16 @@ export async function identity(formData: FormData) {
 
 
     if (type === "LOGOUT") {
-        const session = getBrowserCookie()
-        console.log("GOT THE SESSION INFO OF CURRENT USER" + session.sessionId);
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const user = useSession()
+        console.log("GOT THE SESSION INFO OF CURRENT USER" + user?.sessionId);
 
         const logoutType = formData.get('logoutType')
         console.log("LOGOUT TYPE = " + logoutType);
 
         if (logoutType === "CURRENT_SESSION") {
             try {
-                await Session.findByIdAndDelete({ _id: session.sessionId })
+                await Session.findByIdAndDelete({ _id: user?.sessionId })
                 console.log("DATABASE SESSION DELETED");
                 cookies().delete('User')
                 return {
@@ -200,95 +165,76 @@ export async function identity(formData: FormData) {
                 }
             }
         }
-        if (logoutType === "DELETE") {
-            console.log("LOGOUT TYPE = DELETE INITIATED");
 
-
-            try {
-
-                const token = cookies().get('User')
-                if (token) {
-                    const dbToken = await getBlackListedToken(token.value);
-                    const blackListedToken = dbToken?.token;
-                    const tokenExistsinBlackList = blackListedToken === token.value;
-                    if (tokenExistsinBlackList) {
-                        console.log("USER NOT PERMITTER FOR REVOKE ACTION");
-                        return {
-                            tokenBlackListed: "You are not permitted do this. Your session is expired or revoked"
-                        }
-                    } else {
-                        const id = formData.get('revokedSessionId')
-                        console.log("REVOKED SESSION ID = " + id);
-                        await BlacklistedToken.findByIdAndDelete(id)
-                        return {
-                            deleteSuccess: "Successfully Deleted"
-                        }
-                    }
-                }
-
-            } catch (error) {
-                return {
-                    deleteError: "Failed to delete"
-                }
-            }
-
-        }
         if (logoutType === "VERIFY") {
             try {
                 cookies().delete('User')
+                console.log("LOGOUT VERIFY SUCCESS");
                 return {
-                    logoutSuccess: "Logged out successfully"
+                    verificationInitiated: "Verification started"
                 }
             } catch (error) {
+                console.log("LOGOUT VERIFY ERROR");
                 return {
-                    logoutError: "Failed to logout"
+                    verificationFailed: "Verification failed"
                 }
             }
         }
         if (logoutType === "REVOKE") {
             try {
                 console.log("LOGOUT TYPE = REVOKE INITIATED");
-                const revokingSessionId = formData.get('revokingSessionId')
-                const revokingSessionToken = formData.get('revokingSessionToken')
-                const username = formData.get('username')
-                const userId = formData.get('userId')
-                const blackListedTokenId = uuidv4();
+                console.log("DATA REQUIRED FOR REVOKING SESSION (GOT FROM FORM): ");
 
-                const token = cookies().get('User')
-                if (token) {
-                    const dbToken = await getBlackListedToken(token.value);
-                    const blackListedToken = dbToken?.token;
-                    const tokenExistsinBlackList = blackListedToken === token.value;
-                    if (tokenExistsinBlackList) {
-                        console.log("USER NOT PERMITTER FOR REVOKE ACTION");
+                const revokingSessionId = formData.get('revokingSessionId')
+                console.log('REVOKING SESSION ID = ' + revokingSessionId);
+                const revokingSessionToken = formData.get('revokingSessionToken')
+                console.log("REVOKING SESSION TOKEN = " + revokingSessionToken);
+                const username = formData.get('username')
+                console.log("USER'S USERNAME = " + username);
+                const userId = formData.get('userId')
+                console.log("USERS USER ID = " + userId);
+
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                const user = useSession()
+                if (user) {
+                    console.log("USER SESSION FOUND. USERNAME = " + user.username);
+                    // eslint-disable-next-line react-hooks/rules-of-hooks
+                    const session = await useSessionInDb()
+                    if (session) {
+                        console.log("ID GENERATED FOR BLACKLISTING TOKEN");
+                        const revokeThisSession = await Session.findByIdAndDelete(revokingSessionId)
+                        console.log(`SESSION ${revokingSessionId} IS REVOKED`);
                         return {
-                            tokenBlackListed: "You are not permitted do this. Your session is expired or revoked"
+                            revokeSuccess: "Session Revoked"
                         }
                     } else {
-                        const revokeThisSession = await Session.findByIdAndDelete({ _id: revokingSessionId })
-                        console.log("THIS SESSION IS DELETED FRON THE DATABASE = " + revokeThisSession);
-                        const blaklistToken = await BlacklistedToken.create({
-                            _id: blackListedTokenId,
-                            username: username,
-                            userId: userId,
-                            token: revokingSessionToken
-                        });
-                        console.log("BLCKLISTED TOKEN DATA= " + blaklistToken);
-                        revalidatePath('/identity')
-
+                        console.log("USER'S SESSION IS REVOKED");
                         return {
-                            logoutSuccess: "Session Revoked"
+                            sessionExpired: "You are not permitted do this. Your session is expired or revoked"
                         }
-
                     }
                 }
             } catch (error) {
                 console.log(error, "REVOKE FAILED");
                 return {
-                    logoutError: "Failed to Revoke session"
+                    RevokeError: "Failed to Revoke session"
                 }
             }
         }
+        // if (logoutType === "DELETE") {
+        //     const revokedSessionId = formData.get('revokedSessionId')
+        //     try {
+        //         await Session.findByIdAndDelete(revokedSessionId)
+        //         console.log("SESSION RELETED");
+        //         return {
+        //             deleteSuccess: "Revoked Session deleted"
+        //         }
+        //     } catch (error) {
+        //         return {
+        //             deleteError: "Failed to delete revoked session"
+        //         }
+        //     }
+        // }
     }
 }
 

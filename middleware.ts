@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getBrowserCookie } from "@/server/cookie/session";
+import { useSession } from "./hooks/useSession";
 
 
 
@@ -9,16 +9,14 @@ export async function middleware(request: NextRequest) {
 
     const identityRoutes = pathname === "/identity/create" || pathname === "/identity/signin";
     const appRoute = pathname === "/app" || pathname === "/identity";
-    const user = getBrowserCookie();
-    const session = user.sessionExists
 
-    request.cookies.set('SignInBox', 'open')
-
-    if (identityRoutes && session) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const user = useSession()
+    if (identityRoutes && user) {
         console.log("MIDDLEWAR PRVENTED THE ACCESS TO THIS PAGE");
         return NextResponse.redirect(new URL('/', request.nextUrl));
     }
-    if (appRoute && !session) {
+    if (appRoute && !user) {
         console.log("MIDDLEWAR PRVENTED THE ACCESS TO THIS PAGE");
         return NextResponse.redirect(new URL('/identity/signin', request.url));
     }

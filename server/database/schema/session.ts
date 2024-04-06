@@ -18,6 +18,11 @@ const sessionSchema = new mongoose.Schema(
         ipAddress: {
             type: String
         },
+        isRevoked: {
+            type: Boolean,
+            required: true,
+            default: false
+        },
         date: {
             type: Date,
             default: Date.now
