@@ -10,6 +10,17 @@
     opacity: 1;
   }
 }
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #303030;
+}
+
+::-webkit-scrollbar-track:hover {
+  background: #f0f0f0;
+}
 
 .fadeIn {
   animation: fadeIn 0.7s ease-in-out;
@@ -39,6 +50,7 @@
 }
 .dark .surface {
   background-color: #171717;
+  color: ghostwhite;
 }
 .dark .input {
   background-color: ghostwhite;

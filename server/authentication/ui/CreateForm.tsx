@@ -21,26 +21,14 @@ export default function CreateForm() {
     }
   }
   return (
-    <div className="flex justify-center items-center h-dvh">
-      <form
-        action={identityCreate}
-        className="flex flex-col gap-3 justify-center items-center"
-      >
-        <Input type="text" defaultValue="CREATE" name="type" hidden />
-        <Input
-          placeholder="username"
-          type="username"
-          name="username"
-          required
-        />
-        <Input
-          placeholder="password"
-          type="password"
-          name="password"
-          required
-        />
-        <SubmitButton text={"Create"} />
-      </form>
-    </div>
+    <form
+      action={identityCreate}
+      className="flex flex-col gap-3 justify-center items-center"
+    >
+      <Input type="text" defaultValue="CREATE" name="type" hidden />
+      <Input placeholder="username" type="username" name="username" required />
+      <Input placeholder="password" type="password" name="password" required />
+      <SubmitButton text={"Create"} />
+    </form>
   );
 }

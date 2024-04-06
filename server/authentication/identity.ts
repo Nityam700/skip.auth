@@ -7,48 +7,25 @@ import { cookies } from "next/headers";
 import bcrypt from "bcryptjs"
 import Session from "@/server/database/schema/session";
 import { ip } from "@/hooks/useSession";
-import BlacklistedToken from "../database/schema/blackListedToken";
 import { revalidatePath } from "next/cache";
 import { useSession } from "@/hooks/useSession";
 import { useSessionInDb } from "@/hooks/useSessionIdDb";
 
 
 
-export async function getSessions() {
-    try {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const user = useSession()
-        await connectDatabase()
-        const userSessions = await Session.find({ username: user?.username })
-        return userSessions
-    } catch (error) {
-        console.log(error);
-    }
-}
 
-export async function sessionCount() {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const user = useSession()
 
-    if (user) {
-        try {
-            await connectDatabase()
-            const userSessions = await Session.countDocuments({ username: user?.username })
-            return userSessions
-        } catch (error) {
-            console.log(error);
-        }
-    }
-}
 
 
 export async function identity(formData: FormData) {
 
 
     const type = formData.get('type')
-    console.log("IDENTITY TYPE = " + type);
+    console.log("IDENTITY TYPE = ", type);
 
     await connectDatabase();
+    console.log("LOG FROM SERVER/IDENTITY");
+
 
     if (type === "CREATE") {
         console.log("ACCOUNT CREATION ATTEMPT REQUESTED");
@@ -69,19 +46,19 @@ export async function identity(formData: FormData) {
                 }
             } else {
                 const userId = uuidv4()
-                console.log("A UNIQUE USER ID IS CREATED " + userId);
+                console.log("A UNIQUE USER ID IS CREATED ", userId);
                 const id = userId;
                 const salt = await bcrypt.genSalt(10);
                 const securePassword = await bcrypt.hash
                     (password, salt);
-                console.log("PASSWORD HASHING COMPLETED " + securePassword);
+                console.log("PASSWORD HASHING COMPLETED ", securePassword);
 
                 const user = new User({
                     _id: id,
                     username: username,
                     password: securePassword,
                 });
-                console.log("HERE IS NEW USER DATA = " + user);
+                console.log("HERE IS NEW USER DATA = ", user);
 
                 await user.save();
                 console.log("NEW USER SAVED SUCCESSFULLY");
@@ -114,7 +91,7 @@ export async function identity(formData: FormData) {
         const user = await User.findOne({ username: username });
 
         if (user) {
-            console.log("FOUND THE USER WITH THE PROVIDED USER NAME " + username);
+            console.log("FOUND THE USER WITH THE PROVIDED USER NAME ", username);
             const validPassword = await bcrypt.compare(password as string, user?.password || "");
 
             if (validPassword) {
@@ -146,10 +123,10 @@ export async function identity(formData: FormData) {
     if (type === "LOGOUT") {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const user = useSession()
-        console.log("GOT THE SESSION INFO OF CURRENT USER" + user?.sessionId);
+        console.log("GOT THE SESSION INFO OF CURRENT USER", user?.sessionId);
 
         const logoutType = formData.get('logoutType')
-        console.log("LOGOUT TYPE = " + logoutType);
+        console.log("LOGOUT TYPE = ", logoutType);
 
         if (logoutType === "CURRENT_SESSION") {
             try {
@@ -186,18 +163,18 @@ export async function identity(formData: FormData) {
                 console.log("DATA REQUIRED FOR REVOKING SESSION (GOT FROM FORM): ");
 
                 const revokingSessionId = formData.get('revokingSessionId')
-                console.log('REVOKING SESSION ID = ' + revokingSessionId);
+                console.log('REVOKING SESSION ID = ', revokingSessionId);
                 const revokingSessionToken = formData.get('revokingSessionToken')
-                console.log("REVOKING SESSION TOKEN = " + revokingSessionToken);
+                console.log("REVOKING SESSION TOKEN = ", revokingSessionToken);
                 const username = formData.get('username')
-                console.log("USER'S USERNAME = " + username);
+                console.log("USER'S USERNAME = ", username);
                 const userId = formData.get('userId')
-                console.log("USERS USER ID = " + userId);
+                console.log("USERS USER ID = ", userId);
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 const user = useSession()
                 if (user) {
-                    console.log("USER SESSION FOUND. USERNAME = " + user.username);
+                    console.log("USER SESSION FOUND. USERNAME = ", user.username);
                     // eslint-disable-next-line react-hooks/rules-of-hooks
                     const session = await useSessionInDb()
                     if (session) {
@@ -244,9 +221,9 @@ async function signUserJWT(user: any) {
     console.log("SIGNING JWT TO THE USER");
 
     const sessionId = uuidv4();
-    console.log("A UNIQUE SESSION ID IS CREATED " + sessionId);
+    console.log("A UNIQUE SESSION ID IS CREATED ", sessionId);
     const userIp = await ip()
-    console.log("GOT THE USER IP " + userIp);
+    console.log("GOT THE USER IP ", userIp);
     const tokenData = {
         _id: user._id,
         ip: userIp,
@@ -254,29 +231,28 @@ async function signUserJWT(user: any) {
         username: user.username,
         role: user.role,
     }
-    console.log("HERE IS TOKEN DATA:");
-    console.log("USER ID = " + tokenData._id);
-    console.log("USER IP = " + tokenData.ip);
-    console.log("USER SESSION ID = " + tokenData.sessionId);
-    console.log("USER USERNAME = " + tokenData.username);
-    console.log("USER ROLE = " + tokenData.role);
+    console.log("HERE IS TOKEN DATA (BELOW) - ");
+    console.log("USER ID = ", tokenData._id);
+    console.log("USER IP = ", tokenData.ip);
+    console.log("USER SESSION ID = ", tokenData.sessionId);
+    console.log("USER USERNAME = ", tokenData.username);
+    console.log("USER ROLE = ", tokenData.role);
 
 
 
 
-    const token = jwt.sign(tokenData, process.env.TOKEN_SECRET!, { expiresIn: "1d" })
-    console.log("TOKEN GENERATED FOR USER WITH USER INFO (EXPIRES IN 1d) = " + token);
-    const oneDay = 24 * 60 * 60;
+    const token = jwt.sign(tokenData, process.env.TOKEN_SECRET!, { expiresIn: '12h' });
+    console.log("TOKEN GENERATED FOR USER WITH USER INFO (EXPIRES IN 12h) = ", token);
     cookies().set('User', token, {
         httpOnly: true,
         // domain: ".vercel.app",
         secure: true,
         priority: 'high',
         path: '/',
-        maxAge: oneDay,
+        maxAge: 36000,
         sameSite: 'strict',
     })
-    console.log("COOKIE CREATED IN THE BROWSER WITH VALIDITY OF 1 DAY");
+    console.log("COOKIE CREATED IN THE BROWSER WITH VALIDITY OF 10 Hr");
 
     const newSession = new Session({
         _id: sessionId,
@@ -287,6 +263,6 @@ async function signUserJWT(user: any) {
     })
     await newSession.save()
     revalidatePath('/identity')
-    console.log("USER SESSION SUCCESSFULLY CREATED IN THE DATABASE WITH THE FOLLOWING DATA = " + newSession);
+    console.log("USER SESSION SUCCESSFULLY CREATED IN THE DATABASE WITH THE FOLLOWING DATA = ", newSession);
 
 }

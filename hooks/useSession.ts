@@ -22,7 +22,6 @@ export function useSession() {
       const role = user.role;
       const ipAddress = user.ip;
       const sessionId = user.sessionId;
-      console.log("SESSION EXISTS OR NOT ? " + username);
 
       return {
         userId,

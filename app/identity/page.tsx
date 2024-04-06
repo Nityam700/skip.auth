@@ -1,15 +1,15 @@
-import { getSessions } from "@/server/authentication/identity";
+import { useSession } from "@/hooks/useSession";
+import {} from "@/server/authentication/identity";
 import Revoke from "@/server/authentication/ui/revokeSessionForm";
-import { getProfile } from "@/server/database/data/userDetails";
+import { getUserSessionsList } from "@/server/database/data/authentication/getUserSessionsList";
 
 export default async function Identity() {
-  const profile = await getProfile();
-  const userDbSessions = await getSessions();
-
+  const userDbSessions = await getUserSessionsList();
+  const user = useSession();
   return (
     <div className="lg:ml-24 lg:mr-24 mt-5 md:ml-12 md:mr-12 m-1">
       <div className="flex justify-center items-center text-3xl">
-        Hi {profile?.username}
+        Hi {user?.username}
       </div>
       <div>
         <div className="pl-1 mb-2">

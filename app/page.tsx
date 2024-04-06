@@ -7,7 +7,6 @@ import Link from "next/link";
 
 export default async function Home() {
   const user = useSession();
-
   return (
     <main>
       <Header />

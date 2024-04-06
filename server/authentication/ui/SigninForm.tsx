@@ -21,27 +21,15 @@ export default function SigninForm() {
     }
   }
   return (
-    <div className="flex gap-3 flex-col justify-center items-center h-dvh">
+    <form
+      action={identitySignin}
+      className="flex flex-col gap-3 justify-center items-center"
+    >
       <p className="text-xl">Hi! sign in to continue</p>
-      <form
-        action={identitySignin}
-        className="flex flex-col gap-3 justify-center items-center"
-      >
-        <Input type="text" defaultValue="SIGNIN" name="type" hidden />
-        <Input
-          placeholder="username"
-          type="username"
-          name="username"
-          required
-        />
-        <Input
-          placeholder="password"
-          type="password"
-          name="password"
-          required
-        />
-        <SubmitButton text={"Signin"} />
-      </form>
-    </div>
+      <Input type="text" defaultValue="SIGNIN" name="type" hidden />
+      <Input placeholder="username" type="username" name="username" required />
+      <Input placeholder="password" type="password" name="password" required />
+      <SubmitButton text={"Signin"} />
+    </form>
   );
 }

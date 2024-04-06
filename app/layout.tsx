@@ -19,8 +19,6 @@ export default async function RootLayout({
 }>) {
   // hooks
   const theme = useTheme();
-  // const session = await getSessionInDb();
-  // console.log(session);
 
   return (
     <html lang="en" className={theme}>

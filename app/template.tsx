@@ -1,6 +1,9 @@
+import { useSignInBoxCookie } from "@/hooks/useCookie";
 import { useSession } from "@/hooks/useSession";
 import { useSessionInDb } from "@/hooks/useSessionIdDb";
+import SigninForm from "@/server/authentication/ui/SigninForm";
 import Verify from "@/server/authentication/ui/Verify";
+import { setSigninBoxCookie } from "@/server/cookie/setCookie";
 export default async function Template({
   children,
 }: {
@@ -29,11 +32,26 @@ export default async function Template({
       );
     }
   } else {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const cookie = useSignInBoxCookie();
+    console.log(cookie);
+
+    const open = cookie === "open";
     return (
       <div className="fadeIn">
-        <div className="w-full p-3 bg-emerald-200 text-zinc-900 fixed top-0 text-center">
-          SIGN IN TO CONTINUE
-        </div>
+        {open && (
+          <div className="surface z-50 w-[390] h-auto p-4 rounded-2xl fixed top-3 right-3">
+            <div className="mt-8">
+              <SigninForm />
+            </div>
+            <form
+              className="absolute right-5 top-5"
+              action={setSigninBoxCookie}
+            >
+              <button type="submit">✕</button>
+            </form>
+          </div>
+        )}
         {children}
       </div>
     );
