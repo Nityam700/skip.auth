@@ -1,5 +1,4 @@
 import { getSessions } from "@/server/authentication/identity";
-import DeleteRevokedSession from "@/server/authentication/ui/deleteRevokedSession";
 import Revoke from "@/server/authentication/ui/revokeSessionForm";
 import { getProfile } from "@/server/database/data/userDetails";
 
@@ -48,9 +47,6 @@ export default async function Identity() {
                 username={session.username}
                 userId={session.userId}
               />
-              {session.isRevoked && (
-                <DeleteRevokedSession revokedSessionId={session._id} />
-              )}
             </div>
           ))}
         </div>
