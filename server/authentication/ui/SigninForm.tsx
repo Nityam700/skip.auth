@@ -19,11 +19,11 @@ export default function SignInForm() {
       errorToast(signIn.otpAlreadySent);
       setEmailSent(true);
     }
-    if (signIn?.failedToSendEmail) {
-      errorToast(signIn.failedToSendEmail);
-    }
     if (signIn?.invalidOTP) {
       errorToast(signIn.invalidOTP);
+    }
+    if (signIn?.incorrectPassword) {
+      errorToast(signIn.incorrectPassword);
     }
     if (signIn?.noUserFound) {
       errorToast(signIn.noUserFound);
