@@ -53,7 +53,7 @@ export async function identity(formData: FormData) {
         if (createType === "IDENTITY_CREATE") {
             const userNameExists = await User.findOne({ username: username });
             const emailExists = await User.findOne({ email: email });
-            if (username && emailExists) {
+            if (userNameExists && emailExists) {
                 /* IF USER EXISTS WITH THE PROVIDED CREDENTIALS THEN RETURN MESSAGE THAT USERNAME OR EMAIL IS ALREADY REGISTERED */
                 console.log("USER ALREADY EXISTS WITH THE PROVIDED USERNAME");
                 /* SENDING THE MESSAGE TO THE USER OR FRONTEND */
