@@ -51,9 +51,19 @@ export async function identity(formData: FormData) {
         console.log("USER PASSWORN = " + password);
 
         if (createType === "IDENTITY_CREATE") {
-            const userNameExists = await User.findOne({ username: username });
-            const emailExists = await User.findOne({ email: email });
-            if (userNameExists && emailExists) {
+            /* CHECK THE DB IF THE PROVIDED CREDENTIALS ALREADY EXISTS IN THE DATABASE */
+            /* CHECKING FOR USERNAME */
+            const usernameCheck = await User.findOne({ username: username });
+            /* LOGGING THE DATA */
+            console.log("USERNAME = ", usernameCheck?.username);
+            /* CHECKING FOR EMAIL */
+            const EmailCheck = await User.findOne({ email: email });
+            /* LOGGING THE DATA */
+            console.log("EMAIL = ", EmailCheck?.email);
+            /* FINAL RESULT */
+            const accountExists = EmailCheck === usernameCheck !== null
+
+            if (accountExists) {
                 /* IF USER EXISTS WITH THE PROVIDED CREDENTIALS THEN RETURN MESSAGE THAT USERNAME OR EMAIL IS ALREADY REGISTERED */
                 console.log("USER ALREADY EXISTS WITH THE PROVIDED USERNAME");
                 /* SENDING THE MESSAGE TO THE USER OR FRONTEND */
@@ -261,15 +271,16 @@ export async function identity(formData: FormData) {
                 /* RETURNING MESSAGE TO THE FRONTEND */
                 return {
                     invalidOTP: "Incorrect OTP"
-                }
-            }
-        }
+                };
+            };
+        };
     };
     /* LOGIC FOR SIGN IN METHOD ENDS */
 
 
 
     if (type === "LOGOUT") {
+        /* GET THE SESSION ID FROM THE USE SESSION HOOK. REQUIRED FOR DELETING THE SESSION DOCUMENT IN THE DATABASE */
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const user = useSession()
         console.log("GOT THE SESSION INFO OF CURRENT USER", user?.sessionId);
@@ -288,21 +299,6 @@ export async function identity(formData: FormData) {
             } catch (error) {
                 return {
                     logoutError: "Failed to logout"
-                }
-            }
-        }
-
-        if (logoutType === "VERIFY") {
-            try {
-                cookies().delete('User')
-                console.log("LOGOUT VERIFY SUCCESS");
-                return {
-                    verificationInitiated: "Verification started"
-                }
-            } catch (error) {
-                console.log("LOGOUT VERIFY ERROR");
-                return {
-                    verificationFailed: "Verification failed"
                 }
             }
         }
@@ -344,23 +340,9 @@ export async function identity(formData: FormData) {
                 console.log(error, "REVOKE FAILED");
                 return {
                     RevokeError: "Failed to Revoke session"
-                }
-            }
-        }
-        // if (logoutType === "DELETE") {
-        //     const revokedSessionId = formData.get('revokedSessionId')
-        //     try {
-        //         await Session.findByIdAndDelete(revokedSessionId)
-        //         console.log("SESSION RELETED");
-        //         return {
-        //             deleteSuccess: "Revoked Session deleted"
-        //         }
-        //     } catch (error) {
-        //         return {
-        //             deleteError: "Failed to delete revoked session"
-        //         }
-        //     }
-        // }
+                };
+            };
+        };
     };
 }
 

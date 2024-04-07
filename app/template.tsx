@@ -1,8 +1,8 @@
 import { useSignInBoxCookie } from "@/hooks/useCookie";
 import { useSession } from "@/hooks/useSession";
 import { useSessionInDb } from "@/hooks/useSessionIdDb";
+import Logout from "@/server/authentication/ui/Logout";
 import SigninForm from "@/server/authentication/ui/SigninForm";
-import Verify from "@/server/authentication/ui/Verify";
 import { setSigninBoxCookie } from "@/server/cookie/setCookie";
 export default async function Template({
   children,
@@ -25,7 +25,7 @@ export default async function Template({
               hi {user.username}!<br /> You current session has been revoked. To
               verify you identity sign In again.
             </p>
-            <Verify />
+            <Logout />
           </div>
           {/* {children} */}
         </div>
@@ -39,7 +39,7 @@ export default async function Template({
     const open = cookie === "open";
     return (
       <div className="fadeIn">
-        {open && (
+        {/* {open && (
           <div className="surface z-50 w-[390] h-auto p-4 rounded-2xl fixed top-3 right-3">
             <div className="mt-8">
               <SigninForm />
@@ -51,7 +51,7 @@ export default async function Template({
               <button type="submit">✕</button>
             </form>
           </div>
-        )}
+        )} */}
         {children}
       </div>
     );
