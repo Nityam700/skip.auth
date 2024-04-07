@@ -35,7 +35,20 @@ export default async function Identity() {
               </div>
               <div className="flex gap-2 ">
                 <h2>Signed in on:</h2>
-                <p>{session?.date.toString()}</p>
+                <p>
+                  {new Intl.DateTimeFormat("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    second: "numeric",
+                    hour12: false,
+                    localeMatcher: "best fit",
+                    // timeZoneName: "short",
+                  }).format(session?.date)}
+                </p>
               </div>
               <div className="flex gap-2 items-center">
                 <h2>is revoked:</h2>

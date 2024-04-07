@@ -10,6 +10,9 @@ import { ip } from "@/hooks/useSession";
 import { revalidatePath } from "next/cache";
 import { useSession } from "@/hooks/useSession";
 import { useSessionInDb } from "@/hooks/useSessionIdDb";
+import { sendMail } from "../mail/mail";
+import { customAlphabet } from 'nanoid'
+import PendingUser from "@/server/database/schema/otp";
 
 
 
@@ -21,103 +24,249 @@ export async function identity(formData: FormData) {
 
 
     const type = formData.get('type')
-    console.log("IDENTITY TYPE = ", type);
+    console.log('\x1b[32m%s\x1b[0m', "IDENTITY TYPE = ", type);
 
     await connectDatabase();
-    console.log("LOG FROM SERVER/IDENTITY");
-
+    console.log('\x1b[36m%s\x1b[0m', "LOG FROM SERVER/IDENTITY");
 
     if (type === "CREATE") {
-        console.log("ACCOUNT CREATION ATTEMPT REQUESTED");
+        /* SIGNIN METHOD INITIATED. LOG THE DATA */
+        console.log("SIGN IN METHOD INITIATED");
 
-        try {
-            const username = formData.get('username');
-            const password = formData.get('password') as string;
+        /* FORM DATA OR USER INPUTS */
+        const createType = formData.get('createType');
+        /* PRINTING THE DATA IN THE CONSOLE */
+        console.log("CREATE TYPE = " + createType);
 
-            console.log("FORM DATA ACCQIRED FOR USER CREATION PROCESS");
+        const username = formData.get('username') as string;
+        /* PRINTING THE DATA IN THE CONSOLE */
+        console.log("USER USERNAME = " + username);
 
-            const userExists = await User.findOne({ username: username })
+        const email = formData.get('email') as string;
+        /* PRINTING THE DATA IN THE CONSOLE */
+        console.log("USER EMAIL = " + email);
 
+        const password = formData.get('password') as string;
+        /* PRINTING THE DATA IN THE CONSOLE */
+        console.log("USER PASSWORN = " + password);
 
-            if (userExists) {
+        if (createType === "IDENTITY_CREATE") {
+            const userNameExists = await User.findOne({ username: username });
+            const emailExists = await User.findOne({ email: email });
+            if (username && emailExists) {
+                /* IF USER EXISTS WITH THE PROVIDED CREDENTIALS THEN RETURN MESSAGE THAT USERNAME OR EMAIL IS ALREADY REGISTERED */
                 console.log("USER ALREADY EXISTS WITH THE PROVIDED USERNAME");
+                /* SENDING THE MESSAGE TO THE USER OR FRONTEND */
                 return {
-                    userexists: `username ${username} is taken`
+                    userexists: `hey! either username ${username} or email ${email} is taken`
                 }
             } else {
-                const userId = uuidv4()
-                console.log("A UNIQUE USER ID IS CREATED ", userId);
-                const id = userId;
-                const salt = await bcrypt.genSalt(10);
-                const securePassword = await bcrypt.hash
-                    (password, salt);
-                console.log("PASSWORD HASHING COMPLETED ", securePassword);
+                /* IF USERNAME OR EMAIL DOES NOT EXISTS IN THE DATABASE THEN CONTINUE THE IDENTITY_CREATE PROCESS. */
+                /* GENERATE THE OTP */
+                const nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5);
+                const otp = nanoid();
+                /* SAVE THE OTP IN THE DATABASE ALONG WITH USER'S USERNAME EMAIL AND PASSWORD. THESE DATA WILL BE REQUIRED DURING VERIFICATION PROCESS */
+                try {
+                    /* GENERATE OTP DOCUMENT ID FOR MONGODB */
+                    const pendingUserDocID = uuidv4();
+                    /* HASH THE PASSWORD. IT WILL BE FIRST STORED IN THE PENDIG USER DOCUMENT THEN PASSED TO THE USER DOCUMENT */
+                    const salt = await bcrypt.genSalt(10);
+                    const securePassword = await bcrypt.hash
+                        (password, salt);
+                    /* PENDING USER DOCUMENT DATA ...TO BE SAVED IN DATABASE */
+                    const pendingUser = new PendingUser({
+                        _id: pendingUserDocID,
+                        otp: otp,
+                        username: username,
+                        email: email,
+                        password: securePassword,
+                    });
+                    /* SAVE THE PENDING USER DATA IN THE DATABASE */
+                    await pendingUser.save();
 
-                const user = new User({
-                    _id: id,
+                } catch (error) {
+                    /* CATCH ERROR WHICH OCCURS DURING SAVING PENDING USER DOCUMENT IN THE DATABASE */
+                    console.log("FAILED TO SAVE THE OTP IN THE DATABASE", error);
+                    /* RETURN A MESSAGE TO THE FRONTEND WITH MESSAGE THAT OTP ALREADY SENT */
+                    return {
+                        verificationOtpAlreadySent: `Hi ${username} an otp is already sent to your email ${email}. Make sure to check the spam or junk folder`
+                    };
+                };
+                /* SEND THE MAIL TO THE USER WITH OTP FOR VERIFICATION */
+                sendMail(email, otp, username);
+                /* MAIL IS SENT RETURN THIS MESSAGE TO THE FRONTEND */
+                return {
+                    verificationOtpSent: `Hi ${username} an otp is sent to your ${email}. Use that to verify your identity.`
+                }
+            };
+        };
+
+        if (createType === "IDENTITY_VERIFY_CREATE") {
+            /* GET THE USER ENTERED OTP FROM THE FORM */
+            const otp = formData.get('otp');
+            /* FIND THE PENDING USER DOCUMENT FROM THE DATABASE WITH THE 'OTP' */
+            const validOTP = await PendingUser.findOne({ otp: otp });
+            /* IF A DOCUMENT IS FOUND WITH THAT OTP THAT MEANS OTP IS CORRECT SIGN IN THE USER ASSIGN THE USER JWT */
+            if (validOTP) {
+                /* NOW CREATE THE USER DOCUMENT IN THE DATABASE. THEN STORE THE COOKIE IN THE BROWSER AND CREATE A SESSION DOCUMENT IN THE DATABASE THEN DELETE THAT PENDING USER DOCUMENT FROM THE DATABASE */
+                /* STORE THE PENDING USER DATA IN THE USER VARIABLE */
+                const user = await PendingUser.findOne({ otp: otp });
+                /* CREATE THE USER DOCUMENT IN THE DATABASE */
+                /* GENERATE THE UNIQUE USER ID */
+                const userID = uuidv4();
+                /* GET THE PASSWORD FROM THE PENDING USER DOCUMENT */
+                const password = user.password;
+                /* GET THE email FROM THE PENDING USER DOCUMENT */
+                const email = user.email;
+                /* GET THE username FROM THE PENDING USER DOCUMENT */
+                const username = user.username;
+                /* CREATE A NEW USER DOCUMENT WITH THE ABOVE DATA */
+                const newUser = new User({
+                    _id: userID,
                     username: username,
-                    password: securePassword,
+                    email: email,
+                    password: password,
                 });
-                console.log("HERE IS NEW USER DATA = ", user);
-
-                await user.save();
-                console.log("NEW USER SAVED SUCCESSFULLY");
-                await signUserJWT(user)
-
+                /* SAVE THE NEW USER IN THE DOCUMENT */
+                await newUser.save();
+                /* ASSIGN THE JWT */
+                await signUserJWT(newUser);
+                /* DELETE THE PENDING USER DOCUMENT FROM THE DATABASE */
+                await PendingUser.findByIdAndDelete(validOTP._id)
+                /* LOG THE MESSAGE TO THE CONSOLE THAT SIGN IN IS SUCCESS. ALSO RETURN A MESSAGE TO THE FRONTENT */
+                console.log(`Hi ${user.username} your account is created`);
+                /* RETURNING THE MESSAGE TO THE FRONTEND */
                 return {
-                    success: `Hi ${username} your account created successfully`
+                    accountCreatedSuccess: `Hi ${user.username} your account is created`
                 }
-            }
-
-        } catch (error) {
-            return {
-                error: "Failed to create account"
-            }
-        }
-
-    }
-
-
-
-
-    if (type === "SIGNIN") {
-        console.log("SIGN IN ATTEMPT REQUESTED");
-
-        const username = formData.get('username');
-        const password = formData.get('password');
-
-        console.log("FORM DATA ACCURIED FOR SIGN IN PROCESS");
-
-        const user = await User.findOne({ username: username });
-
-        if (user) {
-            console.log("FOUND THE USER WITH THE PROVIDED USER NAME ", username);
-            const validPassword = await bcrypt.compare(password as string, user?.password || "");
-
-            if (validPassword) {
-                console.log("PASSWORD IS VALIDATED");
-
-                await signUserJWT(user)
-
-                return {
-                    signInSuccess: `Hi ${username} you are logged in now`
-                }
-
             } else {
-                console.log("INCORRECT CREDENTIALS (PASSWORD)");
-
+                /* LOG THE ERROR THAT NO DOCUMENT IN THE DATABASE IS FOUND WITH THE USER ENTERED OTP */
+                console.log("Incorrect OTP");
+                /* RETURNING MESSAGE TO THE FRONTEND */
                 return {
-                    incorrectPassword: "Incorrect credentials."
+                    invalidVerificationOTP: "Incorrect OTP"
                 }
             }
-        } else {
-            console.log(`USER ${username} IS NOT REGISTERED WITH US`);
+        };
 
-            return {
-                userDosentExists: `User ${username} is not registered with us`
+    };
+
+    /* LOGIC FOR SIGN IN METHOD */
+    if (type === "SIGNIN") {
+        /* SIGNIN METHOD INITIATED. LOG THE DATA */
+        console.log("SIGN IN METHOD INITIATED");
+
+        /* FORM DATA OR USER INPUTS */
+        const signInType = formData.get('signInType');
+        /* PRINTING THE DATA IN THE CONSOLE */
+        console.log("SIGN IN TYPE = " + signInType);
+
+        const username = formData.get('username') as string;
+        /* PRINTING THE DATA IN THE CONSOLE */
+        console.log("USERNAME = " + username);
+
+        const password = formData.get('password');
+        /* PRINTING THE DATA IN THE CONSOLE */
+        console.log("PASSWORD = " + password);
+
+        /* CHECK THE SIGNIN TYPE */
+        if (signInType === "IDENTITY_SIGNIN") {
+            /* CHECK IF USER EXISTS IN THE DATABASE */
+            const user = await User.findOne({ username: username });
+            /* IF USER EXISTS THEN CONTINUE TO THE NEXT STEP ELSE RETURN ERROR WITH MESSAGE - USER NOT EXISTS */
+            if (user) {
+                /* NOW CHECK IF THE PASSWORD IS CORRECT OR NOT USING BCRYPT.*/
+                const validPassword = await bcrypt.compare(password as string, user?.password || "");
+                /* IF PASSOWRD IF CORRECT THEN CHECK IF USER HAS 2FA ENABLED OR NOT. IF ENABLED SEND THE VERIFICATION EMAIL ELSE LOG IN THE USER CREATE THE SESSION IN DB AND COOKIE IN THE BROWSER */
+                if (validPassword) {
+                    const twoFA = user.isTwoFactorEnabled
+                    if (twoFA) {
+                        /* GET THE USER EMAIL - REQUIRED FOR SENDING EMAIL */
+                        const email = user.email;
+                        /* GENERATE THE OTP */
+                        const nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5);
+                        const otp = nanoid();
+                        /* SAVE THE OTP IN THE DATABASE ALONG WITH USER'S USERNAME AND EMAIL */
+                        try {
+                            /* GENERATE OTP DOCUMENT ID FOR MONGODB */
+                            const pendingUserDocID = uuidv4();
+                            /* PENDING USER DOCUMENT DATA ...TO BE SAVED IN DATABASE */
+                            const pendingUser = new PendingUser({
+                                _id: pendingUserDocID,
+                                otp: otp,
+                                username: username,
+                            });
+                            /* SAVE THE PENDING USER DATA IN THE DATABASE */
+                            await pendingUser.save();
+
+                        } catch (error) {
+                            /* CATCH ERROR WHICH OCCURS DURING SAVING PENDING USER DOCUMENT IN THE DATABASE */
+                            console.log("FAILED TO SAVE THE OTP IN THE DATABASE", error);
+                            /* RETURN A MESSAGE TO THE FRONTEND WITH MESSAGE THAT OTP ALREADY SENT */
+                            return {
+                                otpAlreadySent: `Hi ${username} an otp is already sent to your email ${email}. Make sure to check the spam or junk folder`
+                            }
+                        }
+                        /* SEND THE MAIL TO THE USER WITH OTP FOR VERIFICATION */
+                        sendMail(email, otp, username);
+                        /* MAIL IS SENT RETURN THIS MESSAGE TO THE FRONTEND */
+                        return {
+                            otpSentForSignIn: `Hi ${username} an otp is sent to your ${email}. Use that to verify your identity.`
+                        }
+                    } else {
+                        /* TWO FACTOR IS NOT ENABLED. SIGNING IN THE USER. ASSIGNING THE JWT TO THE USER AND SAVE THE SESSION TO THE DATABASE */
+                        await signUserJWT(user);
+
+                    }
+                } else {
+                    /* IF PASSWORD IS WRONG THEN LOG THE ERROR */
+                    console.log(`hi ${username} your password didn't matched.`);
+                    /* ALSO RETURN A MESSAGE TO THE USER THAT THE PASSWORD IS WRONG */
+                    return {
+                        incorrectPassword: `hi ${username} your password didn't matched.`
+                    }
+                }
+            } else {
+                /* IF NO USER IS FOUND THEN LOG THE ERROR */
+                console.log(`User ${username} is not registered with us`);
+                /* ALSO RETURN A MESSAGE TO THE USER THAT THE USERNAME IS NOT REGISTERED WITH US */
+                return {
+                    noUserFound: `User ${username} is not registered with us`
+                }
             }
         }
-    }
+        /* LOGIC TO VERIFY THE USERS OTP AND SIGN IN THE USER */
+        if (signInType === "IDENTITY_VERIFY_SIGNIN") {
+            /* GET THE USER ENTERED OTP FROM THE FORM */
+            const otp = formData.get('otp');
+            /* FIND THE PENDING USER DOCUMENT FROM THE DATABASE WITH THE 'OTP' */
+            const validOTP = await PendingUser.findOne({ otp: otp });
+            /* IF A DOCUMENT IS FOUND WITH THAT OTP THAT MEANS OTP IS CORRECT SIGN IN THE USER ASSIGN THE USER JWT */
+            if (validOTP) {
+                /* NOW FIND THE USER DOCUMENT FROM THE DATABASE REQUIRED FOR STORING COOKIE IN THE BROWSER. STORE THE COOKIE IN THE BROWSER AND CREATE A SESSION DOCUMENT IN THE DATABASE THEN DELETE THAT PENDING USER DOCUMENT FROM THE DATABASE */
+                const user = await User.findOne({ username: validOTP.username })
+                /* ASSIGN THE JWT */
+                await signUserJWT(user);
+                /* DELETE THE PENDING USER DOCUMENT FROM THE DATABASE */
+                await PendingUser.findByIdAndDelete(validOTP._id)
+                /* LOG THE MESSAGE TO THE CONSOLE THAT SIGN IN IS SUCCESS. ALSO RETURN A MESSAGE TO THE FRONTENT */
+                console.log(`Hi ${user.username} you are signed in now`);
+                /* RETURNING THE MESSAGE TO THE FRONTEND */
+                return {
+                    signInSuccess: `Hi ${user.username} you are signed in now`
+                }
+            } else {
+                /* LOG THE ERROR THAT NO DOCUMENT IN THE DATABASE IS FOUND WITH THE USER ENTERED OTP */
+                console.log("Incorrect OTP");
+                /* RETURNING MESSAGE TO THE FRONTEND */
+                return {
+                    invalidOTP: "Incorrect OTP"
+                }
+            }
+        }
+    };
+    /* LOGIC FOR SIGN IN METHOD ENDS */
+
 
 
     if (type === "LOGOUT") {
@@ -126,7 +275,7 @@ export async function identity(formData: FormData) {
         console.log("GOT THE SESSION INFO OF CURRENT USER", user?.sessionId);
 
         const logoutType = formData.get('logoutType')
-        console.log("LOGOUT TYPE = ", logoutType);
+        console.log('\x1b[32m%s\x1b[0m', "LOGOUT TYPE = ", logoutType);
 
         if (logoutType === "CURRENT_SESSION") {
             try {
@@ -212,7 +361,7 @@ export async function identity(formData: FormData) {
         //         }
         //     }
         // }
-    }
+    };
 }
 
 
@@ -230,6 +379,7 @@ async function signUserJWT(user: any) {
         sessionId: sessionId,
         username: user.username,
         role: user.role,
+        isTwoFactorEnabled: user.isTwoFactorEnabled,
     }
     console.log("HERE IS TOKEN DATA (BELOW) - ");
     console.log("USER ID = ", tokenData._id);

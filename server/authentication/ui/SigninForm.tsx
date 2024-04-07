@@ -4,32 +4,80 @@ import { SubmitButton } from "@/ui/SubmitButton";
 import { useRouter } from "next/navigation";
 import { identity } from "@/server/authentication/identity";
 import { errorToast, successToast } from "@/hooks/useToast";
+import { useState } from "react";
 
-export default function SigninForm() {
+export default function SignInForm() {
+  const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
-  async function identitySignin(formData: FormData) {
-    const createIdentity = await identity(formData);
-    if (createIdentity?.signInSuccess) {
-      successToast(createIdentity.signInSuccess);
+  async function identitySignIn(formData: FormData) {
+    const signIn = await identity(formData);
+    if (signIn?.otpSentForSignIn) {
+      successToast(signIn.otpSentForSignIn);
+      setEmailSent(true);
+    }
+    if (signIn?.otpAlreadySent) {
+      errorToast(signIn.otpAlreadySent);
+      setEmailSent(true);
+    }
+    if (signIn?.failedToSendEmail) {
+      errorToast(signIn.failedToSendEmail);
+    }
+    if (signIn?.invalidOTP) {
+      errorToast(signIn.invalidOTP);
+    }
+    if (signIn?.noUserFound) {
+      errorToast(signIn.noUserFound);
+    }
+    if (signIn?.signInSuccess) {
+      successToast(signIn.signInSuccess);
       router.push("/");
-    }
-    if (createIdentity?.incorrectPassword) {
-      errorToast(createIdentity.incorrectPassword);
-    }
-    if (createIdentity?.userDosentExists) {
-      errorToast(createIdentity.userDosentExists);
     }
   }
   return (
-    <form
-      action={identitySignin}
-      className="flex flex-col gap-3 justify-center items-center"
-    >
-      <p className="text-xl">Hi! sign in to continue</p>
-      <Input type="text" defaultValue="SIGNIN" name="type" hidden />
-      <Input placeholder="username" type="username" name="username" required />
-      <Input placeholder="password" type="password" name="password" required />
-      <SubmitButton text={"Signin"} />
-    </form>
+    <>
+      {!emailSent && (
+        <form
+          action={identitySignIn}
+          className="flex flex-col gap-3 justify-center items-center"
+        >
+          <Input type="text" defaultValue="SIGNIN" name="type" hidden />
+          <Input
+            type="text"
+            defaultValue="IDENTITY_SIGNIN"
+            name="signInType"
+            hidden
+          />
+          <Input
+            placeholder="username"
+            type="username"
+            name="username"
+            required
+          />
+          <Input
+            placeholder="password"
+            type="password"
+            name="password"
+            required
+          />
+          <SubmitButton text={"Sign In"} />
+        </form>
+      )}
+      {emailSent && (
+        <form
+          action={identitySignIn}
+          className="flex flex-col gap-3 justify-center items-center"
+        >
+          <Input type="text" defaultValue="SIGNIN" name="type" hidden />
+          <Input
+            type="text"
+            defaultValue="IDENTITY_VERIFY_SIGNIN"
+            name="signInType"
+            hidden
+          />
+          <Input type="otp" placeholder="OTP" name="otp" required />
+          <SubmitButton text={"Verify"} />
+        </form>
+      )}
+    </>
   );
 }

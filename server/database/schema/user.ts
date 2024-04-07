@@ -5,9 +5,11 @@ const userSchema = new mongoose.Schema(
         _id: {
             type: String,
         },
+        email: {
+            type: String
+        },
         username: {
             type: String,
-            unique: true
         },
         password: {
             type: String,
@@ -21,7 +23,11 @@ const userSchema = new mongoose.Schema(
         date: {
             type: Date,
             default: Date.now
-        }
+        },
+        isTwoFactorEnabled: {
+            type: Boolean,
+            default: true
+        },
     }, {
     versionKey: false
 }
