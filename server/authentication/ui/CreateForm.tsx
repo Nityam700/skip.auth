@@ -25,6 +25,9 @@ export default function CreateForm() {
     if (createIdentity?.invalidVerificationOTP) {
       errorToast(createIdentity.invalidVerificationOTP);
     }
+    if (createIdentity?.failedToSendVerificationOtp) {
+      errorToast(createIdentity.failedToSendVerificationOtp);
+    }
     if (createIdentity?.verificationOtpAlreadySent) {
       errorToast(createIdentity.verificationOtpAlreadySent);
       setEmailSent(true);

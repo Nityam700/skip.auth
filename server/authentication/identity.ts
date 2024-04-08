@@ -98,11 +98,18 @@ export async function identity(formData: FormData) {
                         verificationOtpAlreadySent: `Hi ${username} an otp is already sent to your email ${email}. Make sure to check the spam or junk folder`
                     };
                 };
-                /* SEND THE MAIL TO THE USER WITH OTP FOR VERIFICATION */
-                sendMail(email, otp, username);
-                /* MAIL IS SENT RETURN THIS MESSAGE TO THE FRONTEND */
-                return {
-                    verificationOtpSent: `Hi ${username} an otp is sent to your ${email}. Use that to verify your identity.`
+                /* SEND EMAIL FOR VERIFICATION */
+                try {
+                    /* SEND THE MAIL TO THE USER WITH OTP FOR VERIFICATION */
+                    sendMail(email, otp, username);
+                    /* MAIL IS SENT RETURN THIS MESSAGE TO THE FRONTEND */
+                    return {
+                        verificationOtpSent: `Hi ${username} an otp is sent to your ${email}. Use that to verify your identity.`
+                    }
+                } catch (error) {
+                    return {
+                        failedToSendVerificationOtp: `Hi ${username} an error occured during verification process`
+                    }
                 }
             };
         };
@@ -216,11 +223,17 @@ export async function identity(formData: FormData) {
                                 otpAlreadySent: `Hi ${username} an otp is already sent to your email ${email}. Make sure to check the spam or junk folder`
                             }
                         }
-                        /* SEND THE MAIL TO THE USER WITH OTP FOR VERIFICATION */
-                        sendMail(email, otp, username);
-                        /* MAIL IS SENT RETURN THIS MESSAGE TO THE FRONTEND */
-                        return {
-                            otpSentForSignIn: `Hi ${username} an otp is sent to your ${email}. Use that to verify your identity.`
+                        try {
+                            /* SEND THE MAIL TO THE USER WITH OTP FOR VERIFICATION */
+                            sendMail(email, otp, username);
+                            /* MAIL IS SENT RETURN THIS MESSAGE TO THE FRONTEND */
+                            return {
+                                otpSentForSignIn: `Hi ${username} an otp is sent to your ${email}. Use that to verify your identity.`
+                            }
+                        } catch (error) {
+                            return {
+                                failedToSendVerificationOtp: `Hi ${username} an error occured during verification process`
+                            }
                         }
                     } else {
                         /* TWO FACTOR IS NOT ENABLED. SIGNING IN THE USER. ASSIGNING THE JWT TO THE USER AND SAVE THE SESSION TO THE DATABASE */

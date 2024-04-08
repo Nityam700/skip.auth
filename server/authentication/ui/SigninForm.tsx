@@ -22,6 +22,9 @@ export default function SignInForm() {
     if (signIn?.invalidOTP) {
       errorToast(signIn.invalidOTP);
     }
+    if (signIn?.failedToSendVerificationOtp) {
+      errorToast(signIn.failedToSendVerificationOtp);
+    }
     if (signIn?.incorrectPassword) {
       errorToast(signIn.incorrectPassword);
     }
