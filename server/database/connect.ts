@@ -1,21 +1,45 @@
-import mongoose, { Connection } from "mongoose";
+import mongoose from "mongoose";
+declare global {
+    var mongoose: any; // This must be a `var` and not a `let / const`
+}
 
-let cachedConnection: Connection | null = null;
+const DATABASE_URI = process.env.DATABASE_URI!;
 
-export async function connectDatabase() {
-    if (cachedConnection) {
-        console.log("Using cached MONGODB connection");
-        return cachedConnection;
+if (!DATABASE_URI) {
+    throw new Error(
+        "Please define the DATABASE_URI environment variable inside .env.local",
+    );
+}
+
+let cached = global.mongoose;
+
+if (!cached) {
+    cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function connectDatabase() {
+    if (cached.conn) {
+        console.log("CACHED CONNECTION MONGODB");
+        return cached.conn;
+    }
+    if (!cached.promise) {
+        const opts = {
+            bufferCommands: false,
+        };
+        cached.promise = mongoose.connect(DATABASE_URI, opts).then((mongoose) => {
+            console.log("NEW CONNECTION MONGODB");
+
+            return mongoose;
+        });
     }
     try {
-        const conn = await mongoose.connect(process.env.DATABASE_URI as string);
-        cachedConnection = conn.connection;
-
-        console.log("New mongodb connection established");
-        return cachedConnection;
-    } catch (error) {
-        console.log(error);
-
-        throw error;
+        cached.conn = await cached.promise;
+    } catch (e) {
+        cached.promise = null;
+        throw e;
     }
+
+    return cached.conn;
 }
+
+export default connectDatabase;

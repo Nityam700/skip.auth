@@ -1,7 +1,6 @@
 "use server"
 
 import { useSession } from "@/hooks/useSession"
-import { connectDatabase } from "@/server/database/connect"
 import Session from "@/server/database/schema/session"
 
 export async function getUserSessionsList() {

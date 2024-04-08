@@ -1,6 +1,5 @@
 "use server"
 
-import { connectDatabase } from "@/server/database/connect";
 import Session from "@/server/database/schema/session";
 
 export async function userSessionCount(username: string) {

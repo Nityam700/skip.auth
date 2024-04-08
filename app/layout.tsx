@@ -5,7 +5,7 @@ import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { useTheme } from "@/hooks/useTheme";
-import { connectDatabase } from "@/server/database/connect";
+import connectDatabase from "@/server/database/connect";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {

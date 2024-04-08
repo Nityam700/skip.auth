@@ -2,8 +2,6 @@
 
 import Session from "@/server/database/schema/session";
 import { useSession } from "./useSession";
-import { connectDatabase } from "@/server/database/connect";
-
 export async function useSessionInDb() {
     try {
         // eslint-disable-next-line react-hooks/rules-of-hooks
