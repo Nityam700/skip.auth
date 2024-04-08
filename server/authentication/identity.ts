@@ -28,9 +28,6 @@ export async function identity(formData: FormData) {
     const type = formData.get('type')
     console.log('\x1b[32m%s\x1b[0m', "IDENTITY TYPE = ", type);
 
-    await connectDatabase();
-    console.log('\x1b[36m%s\x1b[0m', "LOG FROM SERVER/IDENTITY");
-
     if (type === "CREATE") {
         /* SIGNIN METHOD INITIATED. LOG THE DATA */
         console.log("SIGN IN METHOD INITIATED");

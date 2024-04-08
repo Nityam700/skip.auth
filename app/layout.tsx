@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { useTheme } from "@/hooks/useTheme";
+import { connectDatabase } from "@/server/database/connect";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -19,6 +20,8 @@ export default async function RootLayout({
 }>) {
   // hooks
   const theme = useTheme();
+  await connectDatabase();
+  console.log("LOG FROM ROOT LAYOUT FILE");
 
   return (
     <html lang="en" className={theme}>

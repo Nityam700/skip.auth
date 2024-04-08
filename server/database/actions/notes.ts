@@ -10,8 +10,8 @@ export async function addNote(formData: FormData) {
         const noteId = uuidv4()
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const user = useSession();
-        await connectDatabase();
-        console.log("CONNECTION REQUESTED FROM addNote PAGE");
+        // await connectDatabase();
+        // console.log("CONNECTION REQUESTED FROM addNote PAGE");
 
         const _id = noteId
         const heading = formData.get('heading')

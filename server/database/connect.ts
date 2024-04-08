@@ -1,14 +1,21 @@
-import mongoose from "mongoose";
+import mongoose, { Connection } from "mongoose";
+
+let cachedConnection: Connection | null = null;
+
 export async function connectDatabase() {
+    if (cachedConnection) {
+        console.log("Using cached MONGODB connection");
+        return cachedConnection;
+    }
     try {
-        const DATABASE_URI = process.env.DATABASE_URI;
-        if (DATABASE_URI) {
-            await mongoose.connect(DATABASE_URI);
-            console.log("DATABASE CONNECTED");
-        } else {
-            console.log("PROVIDE DATABASE URI")
-        }
+        const conn = await mongoose.connect(process.env.DATABASE_URI as string);
+        cachedConnection = conn.connection;
+
+        console.log("New mongodb connection established");
+        return cachedConnection;
     } catch (error) {
-        console.log("FAILED TO CONNECT TO DATABASE" + error)
+        console.log(error);
+
+        throw error;
     }
 }

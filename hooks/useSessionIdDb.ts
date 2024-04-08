@@ -9,8 +9,8 @@ export async function useSessionInDb() {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const user = useSession()
         const token = user?.tokenValue
-        await connectDatabase()
-        console.log("LOG FROM HOOKS/USESESSIONINDB");
+        // await connectDatabase()
+        // console.log("LOG FROM HOOKS/USESESSIONINDB");
         const sessionInDb = await Session.findOne({ token: token })
         // console.log(sessionInDb);
         return sessionInDb
