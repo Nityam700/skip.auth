@@ -12,7 +12,7 @@ import { useSessionInDb } from "@/hooks/useSessionIdDb";
 import { sendMail } from "../mail/mail";
 import { customAlphabet } from 'nanoid'
 import PendingUser from "@/server/database/schema/otp";
-import { sendLoginNotification } from "../mail/loginNotification";
+// import { sendLoginNotification } from "../mail/loginNotification";
 import { sendAccountCreatedMail } from "../mail/accountCreated";
 
 
@@ -138,7 +138,7 @@ export async function identity(formData: FormData) {
                 /* ASSIGN THE JWT */
                 await signUserJWT(newUser);
                 /* SEND EMAIL TO CLIENR */
-                await sendAccountCreatedMail(email, username)
+                // await sendAccountCreatedMail(email, username)
                 /* DELETE THE PENDING USER DOCUMENT FROM THE DATABASE */
                 await PendingUser.findByIdAndDelete(validOTP._id)
                 /* LOG THE MESSAGE TO THE CONSOLE THAT SIGN IN IS SUCCESS. ALSO RETURN A MESSAGE TO THE FRONTENT */
@@ -261,7 +261,7 @@ export async function identity(formData: FormData) {
                 /* LOG THE MESSAGE TO THE CONSOLE THAT SIGN IN IS SUCCESS. ALSO RETURN A MESSAGE TO THE FRONTENT */
                 console.log(`Hi ${user.username} you are signed in now`);
                 /* SEND THE EMAIL NOTIFICATION TO THE USER ABOUT THE LOGIN */
-                await sendLoginNotification(validOTP.email, validOTP.username);
+                // await sendLoginNotification(validOTP.email, validOTP.username);
                 /* RETURNING THE MESSAGE TO THE FRONTEND */
                 return {
                     signInSuccess: `Hi ${user.username} you are signed in now`

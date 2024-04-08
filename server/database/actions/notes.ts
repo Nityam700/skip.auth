@@ -1,6 +1,5 @@
 "use server"
 
-import { connectDatabase } from "@/server/database/connect"
 import Note from "../schema/notes";
 import { v4 as uuidv4 } from "uuid";
 import { useSession } from "@/hooks/useSession";

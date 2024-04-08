@@ -3,11 +3,11 @@ declare global {
     var mongoose: any; // This must be a `var` and not a `let / const`
 }
 
-const DATABASE_URI = process.env.DATABASE_URI!;
+const MONGODB_URI = process.env.MONGODB_URI!;
 
-if (!DATABASE_URI) {
+if (!MONGODB_URI) {
     throw new Error(
-        "Please define the DATABASE_URI environment variable inside .env.local",
+        "Please define the MONGODB_URI environment variable inside .env.local",
     );
 }
 
@@ -26,7 +26,7 @@ async function connectDatabase() {
         const opts = {
             bufferCommands: false,
         };
-        cached.promise = mongoose.connect(DATABASE_URI, opts).then((mongoose) => {
+        cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
             console.log("NEW CONNECTION MONGODB");
 
             return mongoose;
